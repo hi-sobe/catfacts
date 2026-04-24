@@ -461,15 +461,15 @@ def command_killcat(a):
 cat_index = commandstring + "!cat"
 dog_index = commandstring + "!dog"
 
-# print(cat_index)
-# print(dog_index)
-
 commands = {
     cat_index: command_cat,
     dog_index: command_dog,
     "killcat": command_killcat,
     exitstring: command_killcat
 }
+
+for index, command in commands.items():
+    print("Registered command string: " + index)
 
 for new_line in follow(path_use):
     print(new_line, end='')
