@@ -435,6 +435,29 @@ def message_cs(m):
     keyboard.press_and_release('f13')
     print("SENT MESSAGE\n"+m)
 
+def command_cat(args):
+    currentfactindex=random.randint(0,len(catfacts)-1)
+    currentfact = catfacts[currentfactindex]
+    if sys.argv[1] == "tf":
+        message_rcon(currentfact)
+    elif sys.argv[1] == "cs":
+        message_cs(currentfact)
+
+def command_dog(args):
+    currentfactindex=random.randint(0,len(catfacts)-1)
+    currentfact = catfacts[currentfactindex]
+    currentfact = currentfact.replace("cat", "dog")
+    currentfact = currentfact.replace("kitten", "puppy")
+    currentfact = currentfact.replace("kitty", "puppy")
+    if sys.argv[1] == "tf":
+        message_rcon(currentfact)
+    elif sys.argv[1] == "cs":
+        message_cs(currentfact)
+
+commands = [
+    "!cat": command_cat
+]
+
 for new_line in follow(path_use):
     print(new_line, end='')
     # global stuffcounter
@@ -449,13 +472,9 @@ for new_line in follow(path_use):
             lasttime=curtime
         lasttime = curtime
         interval = random.randint(intervalmin,intervalmax)
-    if new_line.find(commandstring) != -1:
-        currentfactindex=random.randint(0,len(catfacts)-1)
-        currentfact = catfacts[currentfactindex]
-        if sys.argv[1] == "tf":
-            message_rcon(currentfact)
-        elif sys.argv[1] == "cs":
-            message_cs(currentfact)
+    for name, command in enumerate(commands):
+        if new_line.find(name) != -1:
+            command(new_line)
 
     elif new_line.find(exitstring) != -1 or new_line.find("killcat") != -1:
         raise ValueError("KILLING CAT")
