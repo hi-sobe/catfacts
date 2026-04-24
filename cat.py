@@ -393,7 +393,6 @@ stuffcounter = -1
 
 path_use = ""
 commandstring = ""
-exitstring = ""
 
 csmsgbind = "f13"
 
@@ -404,11 +403,11 @@ intervalmax = 180
 
 if sys.argv[1]=="tf":
     path_use=path_tf
-    commandstring = ":  !cat"
+    commandstring = ":  "
     exitstring = "Shutdown function"
 else:
     path_use=path_cs
-    commandstring = ": !cat"
+    commandstring = ": "
     exitstring = "Source2Shutdown"
 
 def message_rcon(m):
@@ -431,8 +430,7 @@ def message_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write("say \"" + m + "\"")
     time.sleep(0.5)
-    # press(csmsgbind,.5)
-    keyboard.press_and_release('f13')
+    keyboard.press_and_release(csmsgbind)
     print("SENT MESSAGE\n"+m)
 
 def command_cat(args):
@@ -449,14 +447,29 @@ def command_dog(args):
     currentfact = currentfact.replace("cat", "dog")
     currentfact = currentfact.replace("kitten", "puppy")
     currentfact = currentfact.replace("kitty", "puppy")
+    currentfact = currentfact.replace("Cat", "Dog")
+    currentfact = currentfact.replace("Kitten", "Puppy")
+    currentfact = currentfact.replace("Kitty", "Puppy")
     if sys.argv[1] == "tf":
         message_rcon(currentfact)
     elif sys.argv[1] == "cs":
         message_cs(currentfact)
 
-commands = [
-    "!cat": command_cat
-]
+def command_killcat(a):
+    raise ValueError("KILLING CAT")
+
+cat_index = commandstring + "!cat"
+dog_index = commandstring + "!dog"
+
+# print(cat_index)
+# print(dog_index)
+
+commands = {
+    cat_index: command_cat,
+    dog_index: command_dog,
+    "killcat": command_killcat,
+    exitstring: command_killcat
+}
 
 for new_line in follow(path_use):
     print(new_line, end='')
@@ -472,9 +485,9 @@ for new_line in follow(path_use):
             lasttime=curtime
         lasttime = curtime
         interval = random.randint(intervalmin,intervalmax)
-    for name, command in enumerate(commands):
-        if new_line.find(name) != -1:
+    for index, command in commands.items():
+        if new_line.find(index) != -1:
             command(new_line)
 
-    elif new_line.find(exitstring) != -1 or new_line.find("killcat") != -1:
-        raise ValueError("KILLING CAT")
+#    elif new_line.find(exitstring) != -1 or new_line.find("killcat") != -1:
+#        raise ValueError("KILLING CAT")
