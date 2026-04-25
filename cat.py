@@ -279,8 +279,14 @@ path_cs_cfg = ""
 rconpassword = ""
 
 debugmode = False
+silent = False
 if len(sys.argv)>=3:
-    if sys.argv[2] == "debug":
+    if sys.argv[2] == "debug" or sys.argv[2] == "d":
+        debugmode = True
+    elif sys.argv[2] == "silent" or sys.argv[2] == "s":
+        silent = True
+    elif sys.argv[2] == "sd":
+        silent = True
         debugmode = True
 
 try:
@@ -395,6 +401,21 @@ def msgpacket(msg, cmdtype):
     # print(fullpacket)
     return fullpacket
 
+def msgpacket_id(msg, cmdtype, customid):
+    global cmdindex
+    # global cmdtype
+    bigness=len(msg)+10
+    # print(bigness)
+    packetbigness = bigness.to_bytes(4, byteorder='little', signed=True)
+    packetid = customid.to_bytes(4, byteorder='little', signed=True)
+    cmdindex = cmdindex+1
+    packettype = cmdtype.to_bytes(4, byteorder='little', signed=True)
+    terminator=b"\x00"
+    # fullpacket=packetbigness+packetid+packettype+msg.encode()+terminator
+    fullpacket=struct.pack("<iii", bigness, cmdindex, cmdtype) + msg.encode() + b"\x00\x00"
+    # print(fullpacket)
+    return fullpacket
+
 stuffcounter = -1
 
 path_use = ""
@@ -417,6 +438,13 @@ else:
     exitstring = "Source2Shutdown"
 
 bot_ident = "\x10\x10\x10"  # used to detect other script users, shutdown all but one
+fingerprint_chars = "\x01\x02\x03\x04\x05\x06\x08\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f"
+fingerprint = ""
+for i in range(3):
+    fingerprint=fingerprint+fingerprint_chars[random.randint(1,len(fingerprint_chars))]
+if debugmode == True:
+    print("local fingerprint: ", end="")
+    print(fingerprint.encode())
 
 statuscommand = b"\x10\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x73\x74\x61\x74\x75\x73\x00\x00"
 
@@ -444,12 +472,13 @@ def command_rcon(m):
 
         response = s.recv(4096)
 
-        message = msgpacket("", 0)
+        time.sleep(.5)
+
+        message = msgpacket_id("", 0, 254)
         s.send(message)     # Send packet
 
+        # this stuff only works on local servers
         overflowsuccess = False
-        #data = s.recv(4096)             # Receive packet
-        # response = ""
         while overflowsuccess == False:
             data = s.recv(4096)
             if debugmode == True:
@@ -457,7 +486,7 @@ def command_rcon(m):
             response = response+data
             if data.find(emptyresponse) != -1:
                 overflowsuccess = True
-                print("whoop!")
+                # print("whoop!")
     return data
 
 #command_rcon("status")
@@ -474,7 +503,7 @@ def message_rcon(m):
 
         time.sleep(.5)
 
-        message=msgpacket("say \x22" + bot_ident + m + "\x22", 2)
+        message=msgpacket("say \x22" + bot_ident + fingerprint + m + "\x22", 2)
         s.send(message)     # Send packet
         if debugmode == True:
             print(message)
@@ -551,7 +580,8 @@ def ident_handle(a):
     localid = 0#math.randint(1,1000)
 
 def getlocalplayerid(a):
-    command_rcon("status")
+    output = command_rcon("status")
+    print(output)
     # print(statustext)
 
 doprompt = True
@@ -572,6 +602,14 @@ dog_index = commandstring + "!dog"
 
 the_lightmaps_thing_the_console_prints_when_user_finishes_connecting_to_server = "Redownloading all lightmaps"
 
+# #    670 "sobe"              [U:1:1315524182]    22:21       46    0 active
+
+playerids = {}
+
+def printplayers(a):
+    for player, playerid in playerids.items():
+        print(player + ": STEAMID " + playerid)
+
 commands = {
     cat_index: command_cat,
     dog_index: command_dog,
@@ -580,7 +618,32 @@ commands = {
     "caton": command_prompton,
     "catoff": command_promptoff,
     bot_ident: ident_handle,
-    the_lightmaps_thing_the_console_prints_when_user_finishes_connecting_to_server: getlocalplayerid
+    the_lightmaps_thing_the_console_prints_when_user_finishes_connecting_to_server: getlocalplayerid,
+    "listplayerids": printplayers
+}
+
+steamid_pattern = "#\\s+(\\d+)\\s+\"(.*)\"\\s+\\[(.*)\\]\\s+(\\S*)\\s+(\\d+)\\s+(\\d+)\\s+active"
+def status_output_process(a, args):
+    # print(a)
+    print("STEAMID IDENTIFIED: " + args.group(3))
+    playerids[args.group(2)] = args.group(3)
+status_start_pattern = "players\\s+:\\s+\\d*\\s+humans,\\s+\\d*\\s+bots\\s+\\(\\d*\\s*max\\)"
+def status_start_process(a,args):
+    global playerids
+    playerids = {}
+
+fingerprint_set="["+fingerprint_chars+"]"
+fingerprint_pattern="\x10\x10\x10("+fingerprint_set+fingerprint_set+fingerprint_set+")"
+def conflict_handler(a, args):
+    if args.group(1) != fingerprint:
+        print("CONFLICT DETECTED!!!")
+        message_rcon("CONFLICT DETECTED!!!")
+    elif args.group(1) == fingerprint:
+        print("LOCAL MESSAGE TETECTUETD")
+
+pattern_commands = {
+    steamid_pattern: status_output_process,
+    fingerprint_pattern: conflict_handler
 }
 
 for index, command in commands.items():
@@ -592,10 +655,10 @@ for new_line in follow(path_use):
     # global stuffcounter
     curtime = int(time.time())
     if (curtime>lasttime+interval) and doprompt==True:
-        if sys.argv[1] == "tf":
+        if (sys.argv[1] == "tf") and silent == False:
             message=bot_ident+"type !cat for a random cat fact!"
             message_rcon(message)
-        elif sys.argv[1] == "cs":
+        elif (sys.argv[1] == "cs") and silent == False:
             message="type !cat for a random cat fact!"
             message_cs(message)
             lasttime=curtime
@@ -604,6 +667,10 @@ for new_line in follow(path_use):
     for index, command in commands.items():
         if new_line.find(index) != -1:
             command(new_line)
+    for index, command in pattern_commands.items():
+        pattern_temp = re.search(index,new_line)
+        if pattern_temp:
+            command(new_line, pattern_temp)
 
 #    elif new_line.find(exitstring) != -1 or new_line.find("killcat") != -1:
 #        raise ValueError("KILLING CAT")
