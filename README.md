@@ -1,11 +1,12 @@
 ## Dependencies
+This script requires the following python libraries:
 - keyboard
 - pynput
 - tkinter
 - pathlib
 - pyKey
 
-Install them with `pip install (dependency)`
+You can install them with `pip install (dependency)`
 
 ## Setup
 Both TF2 and CS2 require the following launch options in steam for this script to function:
