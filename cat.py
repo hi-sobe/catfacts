@@ -616,11 +616,12 @@ def disablescript(a):
     script_conflict_disabled = True
 
 file_commands = {}
+file_pattern_commands = {}
 
 directory = Path("custom")
 for file in directory.iterdir():
     if file.is_file():
-        commandmatch = re.search("(.*).txt", file.name)
+        commandmatch = re.search("(.*)\\.txt", file.name)
         com = ""
         if commandmatch:
             # com = commandstring + commandmatch.group(1)
@@ -635,6 +636,28 @@ for file in directory.iterdir():
                     if debugmode==True:
                         print(str(numentries)+": "+line.strip())
                     numentries=numentries+1
+
+directory = Path("custom_pattern")
+for file in directory.iterdir():
+    if file.is_file():
+        commandmatch = re.search(".*\\.txt", file.name)
+        com = ""
+        if commandmatch:
+            # com = commandstring + commandmatch.group(1)
+            numentries=-1
+            with open("custom_pattern/"+file.name, 'r') as file:
+                for line in file:
+                    if numentries == -1:
+                        com = line.strip()
+                        if debugmode == True:
+                            print("registered pattern command from file: " + com)
+                        file_pattern_commands[com] = {}
+                        numentries=numentries+1
+                    else:
+                        file_pattern_commands[com][numentries] = line.strip()
+                        if debugmode==True:
+                            print(str(numentries)+": "+line.strip())
+                        numentries=numentries+1
 
 def do_file_command(c,a):
     selekta = random.randint(0,len(a)-1)
@@ -720,10 +743,9 @@ for new_line in follow(path_use):
             command(new_line, pattern_temp)
     for index, array in file_commands.items():
         pattern_temp = re.search(commandstring + "!("+index+")",new_line)
-        # print(commandstring + "!("+index+")")
-        # print(index, array, pattern_temp)
         if pattern_temp:
             do_file_command(index, array)
-
-#    elif new_line.find(exitstring) != -1 or new_line.find("killcat") != -1:
-#        raise ValueError("KILLING CAT")
+    for index, array in file_pattern_commands.items():
+        pattern_temp = re.search(index,new_line)
+        if pattern_temp:
+            do_file_command(index, array)

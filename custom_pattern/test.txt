@@ -1,0 +1,4 @@
+sobescooltestcommand\d
+this should trigger whenever a string matching "sobescooltestcommand(number)" is printed to console!
+second entry!
+third entry!
