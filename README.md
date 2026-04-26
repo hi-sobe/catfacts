@@ -5,6 +5,7 @@ This script requires the following python libraries:
 - tkinter
 - pathlib
 - pyKey
+- requests
 
 You can install them with `pip install (dependency)`
 

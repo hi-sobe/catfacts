@@ -1,3 +1,5 @@
+CAT_SCRIPT_VERSION = "1.0.0"
+
 import socket
 import time
 import keyboard
@@ -20,6 +22,17 @@ from pyKey import pressKey, releaseKey, press, sendSequence, showKeys
 import keyboard
 
 import re
+
+import requests
+
+update_data = requests.get("https://raw.githubusercontent.com/hi-sobe/catfacts/refs/heads/main/cat.py")
+update_version = re.search("CAT_SCRIPT_VERSION = \"(\\S*)\"", update_data.text)
+if update_version:
+    if update_version.group(1)!=CAT_SCRIPT_VERSION:
+        response = input("\aUPDATE AVAILABLE!\nCurrent version:\t" + CAT_SCRIPT_VERSION + "\nNew version:\t" + update_version.group(1) + "\nTerminate script? [Y/N]")
+        print("If you've made any local changes to the script, remember to back them up before you update!")
+        if response.lower() == "Y":
+            quit()
 
 if sys.argv[1]=="cs": # give time to alt tab for cs for keybind
     time.sleep(2)
