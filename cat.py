@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.0.0"
+CAT_SCRIPT_VERSION = "1.0.1"
 
 import socket
 import time
@@ -33,6 +33,14 @@ if update_version:
         print("If you've made any local changes to the script, remember to back them up before you update!")
         if response.lower() == "y":
             quit()
+
+print(sys.argv[0])
+if len(sys.argv)==1:
+    response = input("start in cs mode? [Y/N]: ")
+    if response.lower() == "y":
+        sys.argv.append("cs")
+    elif response.lower() == "n" or response == "":
+        sys.argv.append("tf")
 
 if sys.argv[1]=="cs": # give time to alt tab for cs for keybind
     time.sleep(2)
