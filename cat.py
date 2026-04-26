@@ -645,6 +645,7 @@ def status_start_process(a,args):
 fingerprint_set="["+fingerprint_chars+"]"
 fingerprint_pattern="\x10\x10\x10("+fingerprint_set+fingerprint_set+fingerprint_set+")"
 def conflict_handler(a, args):
+    global script_conflict_disabled
     if args.group(1) != fingerprint:
         print("CONFLICT DETECTED!!!")
         if args.group(1).encode() > fingerprint.encode():
