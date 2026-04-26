@@ -692,8 +692,9 @@ pattern_commands = {
     fingerprint_pattern: conflict_handler
 }
 
-for index, command in commands.items():
-    print("Registered command string: " + index)
+if debugmode == True:
+    for index, command in commands.items():
+        print("Registered command string: " + index)
 
 for new_line in follow(path_use):
     if debugmode == True:
