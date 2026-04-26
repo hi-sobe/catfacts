@@ -278,6 +278,8 @@ path_cs_cfg = ""
 
 rconpassword = ""
 
+script_conflict_disabled = False
+
 debugmode = False
 silent = False
 if len(sys.argv)>=3:
@@ -310,7 +312,8 @@ except FileNotFoundError:
     with open("catsettings.txt", "a") as f:
         f.write("CAT SETTINGS\n")
 
-print(path_tf)
+if debugmode == True:
+    print(path_tf)
 
 # IF YOU HAVE A DRIVE LABELED U:\ AND A FILE ON THAT DRIVE CALLED "fuck" THIS PART WILL BREAK THE SCRIPT!!!
 if not path_tf:
@@ -491,27 +494,29 @@ def command_rcon(m):
 
 def message_rcon(m):
     global debugmode
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
+    global script_conflict_disabled
+    if script_conflict_disabled == False:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.connect((HOST, PORT))
 
-        message = msgpacket(rconpassword, 3)
-        s.send(message)     # Send packet
-        data = s.recv(1024)             # Receive packet
-        # print(f"Received from server: {data}")
+            message = msgpacket(rconpassword, 3)
+            s.send(message)     # Send packet
+            data = s.recv(1024)             # Receive packet
+            # print(f"Received from server: {data}")
 
-        time.sleep(.5)
+            time.sleep(.5)
 
-        message=msgpacket("say \x22" + bot_ident + fingerprint + m + "\x22", 2)
-        s.send(message)     # Send packet
-        if debugmode == True:
-            print(message)
-        data = s.recv(4096)             # Receive packet
-        if debugmode == True:
-            print(f"Received from server: {data}")
-        data = s.recv(4096)             # Receive packet
-        if debugmode == True:
-            print(f"Received from server: {data}")
-        # print(f"Received from server: {data}")
+            message=msgpacket("say \x22" + bot_ident + fingerprint + m + "\x22", 2)
+            s.send(message)     # Send packet
+            if debugmode == True:
+                print(message)
+            data = s.recv(4096)             # Receive packet
+            if debugmode == True:
+                print(f"Received from server: {data}")
+            data = s.recv(4096)             # Receive packet
+            if debugmode == True:
+                print(f"Received from server: {data}")
+            # print(f"Received from server: {data}")
 
 def message_cs(m):
     with open(path_cs_cfg, "w") as f:
@@ -608,6 +613,11 @@ def printplayers(a):
     for player, playerid in playerids.items():
         print(player + ": STEAMID " + playerid)
 
+def enablescript(a):
+    script_conflict_disabled = False
+def disablescript(a):
+    script_conflict_disabled = True
+
 commands = {
     cat_index: command_cat,
     dog_index: command_dog,
@@ -617,7 +627,9 @@ commands = {
     "catoff": command_promptoff,
     bot_ident: ident_handle,
     the_lightmaps_thing_the_console_prints_when_user_finishes_connecting_to_server: getlocalplayerid,
-    "listplayerids": printplayers
+    "listplayerids": printplayers,
+    "script_enable": enablescript,
+    "script_disable": disablescript
 }
 
 steamid_pattern = "#\\s+(\\d+)\\s+\"(.*)\"\\s+\\[(.*)\\]\\s+(\\S*)\\s+(\\d+)\\s+(\\d+)\\s+active"
@@ -635,9 +647,16 @@ fingerprint_pattern="\x10\x10\x10("+fingerprint_set+fingerprint_set+fingerprint_
 def conflict_handler(a, args):
     if args.group(1) != fingerprint:
         print("CONFLICT DETECTED!!!")
-        message_rcon("CONFLICT DETECTED!!!")
-    elif args.group(1) == fingerprint:
-        print("LOCAL MESSAGE TETECTUETD")
+        if args.group(1).encode() > fingerprint.encode():
+            script_conflict_disabled = True
+            print("#############################")
+            print("SCRIPT DISABLED")
+            print("type \'echo script_enable\' in console to reenable!")
+            print("please wait until next server before reenabling.")
+            print("#############################")
+        else:
+            if debugmode == True:
+                print("You won! disabling other script.")
 
 pattern_commands = {
     steamid_pattern: status_output_process,
