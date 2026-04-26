@@ -30,6 +30,7 @@ By default, the config file is named `sobecatfacts.cfg`. Add the following line 
 ```
 bind f13 "exec sobecatfacts"
 ``` 
+**NOTE:** Because it uses keybinds to send messages in CS2, the script **WILL NOT SEND MESSAGES** if you are alt-tabbed, have chat or console open, or any other situation that prevents keybind inputs from being processed. I recommend binding another key to run `sobecatfacts.cfg` so that you can send the last queued message manually if someone missed theirs.
 
 ## Usage
 Everything in this repository is ready to run as-is.
