@@ -29,9 +29,9 @@ update_data = requests.get("https://raw.githubusercontent.com/hi-sobe/catfacts/r
 update_version = re.search("CAT_SCRIPT_VERSION = \"(\\S*)\"", update_data.text)
 if update_version:
     if update_version.group(1)!=CAT_SCRIPT_VERSION:
-        response = input("\aUPDATE AVAILABLE!\nCurrent version:\t" + CAT_SCRIPT_VERSION + "\nNew version:\t" + update_version.group(1) + "\nTerminate script? [Y/N]")
+        response = input("\aUPDATE AVAILABLE!\nCurrent version:\t" + CAT_SCRIPT_VERSION + "\nNew version:\t" + update_version.group(1) + "\nTerminate script? [Y/N]: ")
         print("If you've made any local changes to the script, remember to back them up before you update!")
-        if response.lower() == "Y":
+        if response.lower() == "y":
             quit()
 
 if sys.argv[1]=="cs": # give time to alt tab for cs for keybind
