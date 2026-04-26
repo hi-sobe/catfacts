@@ -9,7 +9,7 @@ This script requires the following python libraries:
 You can install them with `pip install (dependency)`
 
 ## Setup
-Both TF2 and CS2 require the following launch options in steam for this script to function:
+Both TF2 and CS2 require the following launch options in steam for this script to function:\
 ``-usercon -condebug -conclearlog``. The script uses these to read console output and parse chat messages.
 
 When running the script for the first time in either mode, you will be prompted to set the path to your game's `console.log`. This file is automatically created after launching the game once with these launch options.
