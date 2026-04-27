@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.0.6"
+CAT_SCRIPT_VERSION = "1.0.7"
 
 header_output = [
  "     _----_ _---_  ,----_  ,------,",#                                                                                                                                                    .
@@ -8,7 +8,7 @@ header_output = [
  "  |     ,_:  ' |   ^,  |   |           '|            [silent/s]: silence chat prompt",#                    /  /   ,'-'--: |  | _:   ',/   /                                               .
  "  |    ' \\   ,'     |     /             |        ________________________ ",#                            |  |   ;     |  |   '_,'\   \  |                                                .
  "  |       |         |     \\,            |       |+                      +|",#                            ', ',   ;_ __',  ',  \   |   |  \                                               .
- "  |       |         |      |            |       |  CAT FACTS ver. 1.0.6  |",#                               ', ',   '-_| \  ',  |  |   |   \                                              .
+ "  |       |         |      |            |       |  CAT FACTS ver. 1.0.7  |",#                               ', ',   '-_| \  ',  |  |   |   \                                              .
  "  |       | ;  ,    |      |            |       |____________   by SOBE  |__________________",#               ', ',       \__/__|  |   |\   \                                             .
  "  |       |    '   ,'  |   |           ,|       |||_|____|_|||________ +                   +|",#                ', ',     / ___/__/   /--'   \                                            .
  "   \\_.:   |-____-' ;       |   ________|'                    ||____|_||  concept : KACEY2K  |",#                 \__\___/  \__\_____/|______|                                            .
@@ -333,6 +333,8 @@ rconpassword = ""
 
 script_conflict_disabled = False
 
+allowchatprompt = False
+
 debugmode = False
 silent = False
 if len(sys.argv)>=3:
@@ -424,7 +426,7 @@ HOST = "127.0.0.1"
 PORT = 27015
 
 def follow(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'r', errors="replace") as f:
         # Move to the end of the file if you only want new data
         f.seek(0, 2) 
         while True:
@@ -544,8 +546,8 @@ def command_rcon(m):
         overflowsuccess = False
         while overflowsuccess == False:
             data = s.recv(4096)
-            if debugmode == True:
-                print(f"Received from server: {data}")
+            # if debugmode == True:
+                # print(f"Received from server: {data}")
             response = response+data
             if data.find(emptyresponse) != -1:
                 overflowsuccess = True
@@ -596,7 +598,7 @@ def echo_rcon(m):
         message = msgpacket(rconpassword, 3)
         s.send(message)     # Send packet
         data = s.recv(1024)             # Receive packet
-        print(f"Received from server: {data}")
+        # print(f"Received from server: {data}")
 
         time.sleep(.5)
 
@@ -604,7 +606,7 @@ def echo_rcon(m):
         print(message)
         s.send(message)     # Send packet
         data = s.recv(4096)             # Receive packet
-        print(f"Received from server: {data}")
+        # print(f"Received from server: {data}")
 def echo_cs(m): # THESE DONT WORK
     with open(path_cs_cfg, "w") as f:
         f.write("echo \"" + m + "\"")
@@ -645,16 +647,21 @@ def command_killcat(a):
 def ident_handle(a):
     localid = 0#math.randint(1,1000)
 
+maxplayers_over_32 = False
 lightmaps = "Redownloading all lightmaps"
 def connectionfinished_handler(a):
     global blockmessages
     global lasttime
+    global allowchatprompt
+    global maxplayers_over_32
     output = command_rcon("status")
     blockmessages = False
     lasttime = 0 # Allow script to send cat prompt immediately upon connecting to a server
 
     print("\rServer type not determined, assuming community server.", end="")
     community_compat=True
+    if maxplayers_over_32 == False:
+        allowchatprompt = False
     # print(output)
     # print(statustext)
 
@@ -809,7 +816,9 @@ def conflict_handler_community(a, args):
 
 hostname_pattern = "hostname:\\s*(.*)"
 def hostname_handler(a, args):
+    global allowchatprompt
     global community_compat
+    allowchatprompt = True
     if re.search("Valve Matchmaking Server", args.group(1)):
         community_compat = False
         if debugmode==True:
@@ -830,13 +839,37 @@ def serverconnect_handler(a, args):
     global community_compat
     community_compat = True 
     print("\rConnecting to server...                                        \r", end="")
+serverconnecting_matchmaking_pattern="Connecting to matchmaking server \\d*"
+def serverconnect_matchmaking_handler(a, args):
+    # global blockmessages
+    # blockmessages=True
+    # global community_compat
+    # community_compat = False 
+    print("\rConnecting to matchmaking server...                                        \r", end="")
+
+playercount_pattern="Players:\\s*(\\d*)\\s*/\\s*(\\d*)"
+def playercount_handler(a, args):
+    global allowchatprompt
+    global maxplayers_over_32
+    if int(args.group(2)) > 32:
+        maxplayers_over_32 = True
+        allowchatprompt = True
+        if debugmode==True:
+            print("ALLOWED PROMPT FOR OVER 32 MAXPLAYERS")
+        else:
+            print("\rMax players over 32, assuming community server              \r", end="")
+        community_compat = True
+    else:
+        maxplayers_over_32 = False
 
 pattern_commands = {
     steamid_pattern: status_output_process,
     fingerprint_pattern: conflict_handler,
     fingerprint_pattern_community: conflict_handler_community,
     hostname_pattern: hostname_handler,
-    serverconnecting_pattern: serverconnect_handler
+    serverconnecting_pattern: serverconnect_handler,
+    serverconnecting_matchmaking_pattern: serverconnect_matchmaking_handler,
+    playercount_pattern: playercount_handler
 }
 
 if debugmode == True:
@@ -851,7 +884,6 @@ for new_line in follow(path_use):
     if havewesentstatusyet == False:
         command_rcon("status")
         time.sleep(.5)
-        havewesentstatusyet = True
     if debugmode == True:
         print(new_line.replace("\x07", ""), end='')
     # global stuffcounter
@@ -871,7 +903,7 @@ for new_line in follow(path_use):
         if pattern_temp:
             do_file_command(index, array)
     curtime = int(time.time())
-    if (curtime>lasttime+interval) and doprompt==True:
+    if (curtime>lasttime+interval) and doprompt==True and allowchatprompt==True:
         if (sys.argv[1] == "tf") and silent == False:
             message="type !cat for a random cat fact!"
             message_rcon(message)
@@ -881,3 +913,6 @@ for new_line in follow(path_use):
             lasttime=curtime
         lasttime = curtime
         interval = random.randint(intervalmin,intervalmax)
+    if havewesentstatusyet == False:
+        command_rcon("echo CAT_CONFIRM_CONNECTION_PROCESS")
+        havewesentstatusyet = True

@@ -1,3 +1,8 @@
+## 1.0.7
+* Reworked community server detection
+	* Previously detection would be performed AFTER first chat prompt was sent, causing the first prompt in valve servers to be prefixed with the community server fingerprint.
+* Display connection status to make potential script failures easier to identify
+
 ## 1.0.6
 * Automatically assumes server is community server until `status` confirmation
 	* On community servers with increased playerlimit, first lines of `status` output can fail to register, causing failure to switch to community server fingerprint.
