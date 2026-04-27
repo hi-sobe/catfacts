@@ -1,3 +1,7 @@
+## 1.0.8
+* Added framework to print script info in non-debug mode without spamming terminal
+* Currently only shows connection status and progress bar for next chat prompt
+
 ## 1.0.7
 * Reworked community server detection
 	* Previously detection would be performed AFTER first chat prompt was sent, causing the first prompt in valve servers to be prefixed with the community server fingerprint.

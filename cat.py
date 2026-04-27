@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.0.7"
+CAT_SCRIPT_VERSION = "1.0.8"
 
 header_output = [
  "     _----_ _---_  ,----_  ,------,",#                                                                                                                                                    .
@@ -8,7 +8,7 @@ header_output = [
  "  |     ,_:  ' |   ^,  |   |           '|            [silent/s]: silence chat prompt",#                    /  /   ,'-'--: |  | _:   ',/   /                                               .
  "  |    ' \\   ,'     |     /             |        ________________________ ",#                            |  |   ;     |  |   '_,'\   \  |                                                .
  "  |       |         |     \\,            |       |+                      +|",#                            ', ',   ;_ __',  ',  \   |   |  \                                               .
- "  |       |         |      |            |       |  CAT FACTS ver. 1.0.7  |",#                               ', ',   '-_| \  ',  |  |   |   \                                              .
+ "  |       |         |      |            |       |  CAT FACTS ver. 1.0.8  |",#                               ', ',   '-_| \  ',  |  |   |   \                                              .
  "  |       | ;  ,    |      |            |       |____________   by SOBE  |__________________",#               ', ',       \__/__|  |   |\   \                                             .
  "  |       |    '   ,'  |   |           ,|       |||_|____|_|||________ +                   +|",#                ', ',     / ___/__/   /--'   \                                            .
  "   \\_.:   |-____-' ;       |   ________|'                    ||____|_||  concept : KACEY2K  |",#                 \__\___/  \__\_____/|______|                                            .
@@ -335,6 +335,8 @@ script_conflict_disabled = False
 
 allowchatprompt = False
 
+serverconmessage = ""
+
 debugmode = False
 silent = False
 if len(sys.argv)>=3:
@@ -650,6 +652,7 @@ def ident_handle(a):
 maxplayers_over_32 = False
 lightmaps = "Redownloading all lightmaps"
 def connectionfinished_handler(a):
+    global serverconmessage
     global blockmessages
     global lasttime
     global allowchatprompt
@@ -658,7 +661,8 @@ def connectionfinished_handler(a):
     blockmessages = False
     lasttime = 0 # Allow script to send cat prompt immediately upon connecting to a server
 
-    print("\rServer type not determined, assuming community server.", end="")
+    #print("\rServer type not determined, assuming community server.", end="")
+    serverconmessage = "Server type not determined, assuming community server."
     community_compat=True
     if maxplayers_over_32 == False:
         allowchatprompt = False
@@ -818,37 +822,45 @@ hostname_pattern = "hostname:\\s*(.*)"
 def hostname_handler(a, args):
     global allowchatprompt
     global community_compat
+    global serverconmessage
     allowchatprompt = True
     if re.search("Valve Matchmaking Server", args.group(1)):
         community_compat = False
         if debugmode==True:
             print("### CONNECTED TO VALVE MATCHMAKING SERVER ###")
-        else:
-            print("\rConnected to valve server                             \r", end="")
+        #else:
+            #print("\rConnected to valve server                             \r", end="")
+        serverconmessage = "Connected to valve server"
     else:
         community_compat = True
         if debugmode==True:
             print("### CONNECTED TO COMMUNITY SERVER ###")
-        else:
-            print("\rConnected to community server                         \r", end="")
+        #else:
+            #print("\rConnected to community server                         \r", end="")
+        serverconmessage = "Connected to community server"
 
 serverconnecting_pattern="Connecting to \\d*"
 def serverconnect_handler(a, args):
+    global serverconmessage
     global blockmessages
     blockmessages=True
     global community_compat
     community_compat = True 
-    print("\rConnecting to server...                                        \r", end="")
+    #print("\rConnecting to server...                                        \r", end="")
+    serverconmessage = "Connecting to server..."
 serverconnecting_matchmaking_pattern="Connecting to matchmaking server \\d*"
 def serverconnect_matchmaking_handler(a, args):
     # global blockmessages
     # blockmessages=True
     # global community_compat
     # community_compat = False 
-    print("\rConnecting to matchmaking server...                                        \r", end="")
+    global serverconmessage
+    #print("\rConnecting to matchmaking server...                                        \r", end="")
+    serverconmessage = "Connecting to matchmaking server..."
 
 playercount_pattern="Players:\\s*(\\d*)\\s*/\\s*(\\d*)"
 def playercount_handler(a, args):
+    global serverconmessage
     global allowchatprompt
     global maxplayers_over_32
     if int(args.group(2)) > 32:
@@ -856,8 +868,9 @@ def playercount_handler(a, args):
         allowchatprompt = True
         if debugmode==True:
             print("ALLOWED PROMPT FOR OVER 32 MAXPLAYERS")
-        else:
-            print("\rMax players over 32, assuming community server              \r", end="")
+        #else:
+            #print("\rMax players over 32, assuming community server              \r", end="")
+        serverconmessage = "Max players over 32, assuming community server"
         community_compat = True
     else:
         maxplayers_over_32 = False
@@ -878,14 +891,43 @@ if debugmode == True:
 
 havewesentstatusyet = False
 
+LINE_UP = "\033[1A"
+LINE_CLEAR = "\033[2K"
+
 for new_line in follow(path_use):
     ## send status once on script load to ensure community_compat is set if script is loaded while connected to a community server
     ## does not work unless command is set after this loop is established
     if havewesentstatusyet == False:
         command_rcon("status")
         time.sleep(.5)
+    curtime = int(time.time())
     if debugmode == True:
         print(new_line.replace("\x07", ""), end='')
+    else:
+        # sys.stdout.write("\r\x1b[2\x1b[1A\x1b[2K")
+        print(LINE_CLEAR+LINE_UP+LINE_CLEAR, end="")
+        # sys.stdout.flush()
+        if serverconmessage != "":
+            print("\r"+serverconmessage)
+        else:
+            print("\rIDLE")
+        timeuntil = (lasttime+interval)-curtime
+        if timeuntil<0 or re.search("Connecting to", serverconmessage):
+            print("\rWaiting for connection...", end="")
+        else:
+            #if doprompt == True and allowchatprompt == True:
+            perc = (interval-timeuntil)/interval
+            percstring="\r["
+            # print("\r[", end="")
+            for i in range(1,20):
+                if perc<(i/20):
+                    percstring+=" "
+                else:
+                    percstring+="#"
+            percstring+="] Next prompt in " + str(timeuntil) + " seconds"
+            print(percstring,end="")
+            #else:
+                #print("[         XX         ] Prompt currently blocked", end="")
     # global stuffcounter
     for index, command in commands.items():
         if new_line.find(index) != -1:
@@ -902,7 +944,6 @@ for new_line in follow(path_use):
         pattern_temp = re.search(index,new_line)
         if pattern_temp:
             do_file_command(index, array)
-    curtime = int(time.time())
     if (curtime>lasttime+interval) and doprompt==True and allowchatprompt==True:
         if (sys.argv[1] == "tf") and silent == False:
             message="type !cat for a random cat fact!"
