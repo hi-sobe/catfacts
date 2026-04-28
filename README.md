@@ -1,6 +1,6 @@
 ![GATITO IMAGE](gatito.jpg)
 
-[CHANGELOG](CHANGELOG.md)
+[CHANGELOG](CHANGELOG.md)\
 If you use this software, please report issues, feedback, suggestions to me on [STEAM](https://steamcommunity.com/id/isthatsobe/) or [EMAIL](mailto:sobefromgithub@gmail.com)
 
 ## Dependencies
