@@ -1,6 +1,7 @@
 ![GATITO IMAGE](gatito.jpg)
 
 [CHANGELOG](CHANGELOG.md)
+If you use this software, please report issues, feedback, suggestions to me on [https://steamcommunity.com/id/isthatsobe/](STEAM) or [mailto:sobefromgithub@gmail.com]EMAIL!!
 
 ## Dependencies
 This script requires the following python libraries:
