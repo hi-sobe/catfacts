@@ -1,0 +1,2 @@
+#CMDSTRING!cat
+#CMDSTRING!meow
