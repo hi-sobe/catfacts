@@ -327,7 +327,7 @@ catfacts = [
     "Cats will NOT eat their owners after they die...but they will cook them!",
     "80\x25 of cats can speak and understand English, but they don't.",
     "You can download this script at: https://github.com/hi-sobe/catfacts",
-    "Did you know? 98\% of cats in the world are the same cat!"
+    "Did you know? 98% of cats in the world are the same cat!"
 
 ]
 
@@ -605,7 +605,7 @@ def command_cs(m):
         f.write(m)
     time.sleep(0.5)
     keyboard.press_and_release(csmsgbind)
-    if debugmode==True;
+    if debugmode==True:
         print("EXECUTED COMMAND(s):\n"+m)
 
 def cat_message(m):
