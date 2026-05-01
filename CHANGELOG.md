@@ -1,3 +1,8 @@
+## 1.1.0 beta
+* Python commands
+	* Documentation available in README.md in `python commands` section
+* **THIS IS A BETA RELEASE!** New features may have bugs, or may not behave as expected. Please report issues to me if you find them!
+
 ## 1.0.9
 * Fixed CS2 support
 	* Previous community server detection updates broke `cs` launch option, works now

@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.0.9"
+CAT_SCRIPT_VERSION = "1.1.0"
 
 #                                                                                       .
 #             _______   _____,,,--,-----------,                                         .
@@ -326,7 +326,8 @@ catfacts = [
     "They meow!",
     "Cats will NOT eat their owners after they die...but they will cook them!",
     "80\x25 of cats can speak and understand English, but they don't.",
-    "You can download this script at: https://github.com/hi-sobe/catfacts"
+    "You can download this script at: https://github.com/hi-sobe/catfacts",
+    "Did you know? 98\% of cats in the world are the same cat!"
 
 ]
 
@@ -599,6 +600,26 @@ def message_cs(m):
     keyboard.press_and_release(csmsgbind)
     # print("SENT MESSAGE\n"+m)
 
+def command_cs(m):
+    with open(path_cs_cfg, "w") as f:
+        f.write(m)
+    time.sleep(0.5)
+    keyboard.press_and_release(csmsgbind)
+    if debugmode==True;
+        print("EXECUTED COMMAND(s):\n"+m)
+
+def cat_message(m):
+    if sys.argv[1]=="tf":
+        message_rcon(m)
+    else:
+        message_cs(m)
+
+def cat_command(m):
+    if sys.argv[1]=="tf":
+        command_rcon(m)
+    else:
+        command_cs(m)
+
 # THESE DONT WORK
 def echo_rcon(m):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -628,16 +649,16 @@ def echo_game(m):   # THESE DONT WORK
     elif sys.argv[1] == "cs":
         echo_cs(m)
 
-def command_cat(args):
-    currentfactindex=random.randint(0,len(catfacts)-1)
-    currentfact = catfacts[currentfactindex]
-    if sys.argv[1] == "tf":
-        message_rcon(currentfact)
-    elif sys.argv[1] == "cs":
-        if re.search("https://github.com/hi-sobe/catfacts", currentfact): # dont advertise this script to cs players because they are racist and cannot be trusted
-            currentfactindex=random.randint(0,len(catfacts)-1)
-            currentfact = catfacts[currentfactindex]
-        message_cs(currentfact)
+#def command_cat(args):
+#    currentfactindex=random.randint(0,len(catfacts)-1)
+#    currentfact = catfacts[currentfactindex]
+#    if sys.argv[1] == "tf":
+#        message_rcon(currentfact)
+#    elif sys.argv[1] == "cs":
+#        if re.search("https://github.com/hi-sobe/catfacts", currentfact): # dont advertise this script to cs players because they are racist and cannot be trusted
+#            currentfactindex=random.randint(0,len(catfacts)-1)
+#            currentfact = catfacts[currentfactindex]
+#        message_cs(currentfact)
 
 def command_dog(args):
     currentfactindex=random.randint(0,len(catfacts)-1)
@@ -725,6 +746,7 @@ def forcecommunitycompat_off(c):
 
 file_commands = {}
 file_pattern_commands = {}
+file_py_commands = {}
 
 directory = Path("custom")
 for file in directory.iterdir():
@@ -767,6 +789,30 @@ for file in directory.iterdir():
                             print(str(numentries)+": "+line.strip())
                         numentries=numentries+1
 
+directory = Path("custom_py")
+for file in directory.iterdir():
+    if file.is_file():
+        commandmatch = re.search("(.*)\\.txt", file.name)
+        #com = ""
+        if commandmatch:
+            #com = commandmatch.group(1)
+            with open("custom_py/"+file.name, 'r') as file:
+                for line in file:
+                    com = re.sub("#CMDSTRING", commandstring, line).strip()
+                    glock_balls = {}
+                    cmd_text=""
+                    with open("custom_py/"+commandmatch.group(1)+".py", 'r') as pyfile:
+                        for pyline in pyfile:
+                            cmd_text+=pyline
+                    exec(cmd_text, globals=globals(), locals=glock_balls)
+                    if "PAT_CMD" in glock_balls:
+                        file_py_commands[com] = glock_balls["PAT_CMD"]
+                        if debugmode == True:
+                            print("registered pattern python command from file: " + com)
+                    else:
+                        if debugmode == True:
+                            print("FAILED to pattern python command \"" + com + "\", no function PAT_CMD defined in script")
+
 def do_file_command(c,a):
     selekta = random.randint(0,len(a)-1)
     message_rcon(a[selekta])
@@ -776,7 +822,7 @@ cat_index = commandstring + "!cat"
 dog_index = commandstring + "!dog"
 
 commands = {
-    cat_index: command_cat,
+#    cat_index: command_cat,
     dog_index: command_dog,
     "killcat": command_killcat,
     exitstring: command_killcat,
@@ -985,6 +1031,10 @@ for new_line in follow(path_use):
         pattern_temp = re.search(index,new_line)
         if pattern_temp:
             do_file_command(index, array)
+    for index, f in file_py_commands.items():
+        pattern_temp = re.search(index,new_line)
+        if pattern_temp:
+            f(index)
     if (curtime>lasttime+interval) and doprompt==True and allowchatprompt==True:
         if (sys.argv[1] == "tf") and silent == False:
             message="type !cat for a random cat fact!"

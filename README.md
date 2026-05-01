@@ -65,8 +65,9 @@ Currently supported commands:
 | community_on  | Forces community server compatibility mode on, to prevent chat messages from being filtered for invalid characters |
 | community_off | Forces community server compatibility mode off (will be turned back on after every `status` command) |
 
-## Custom commands
-This script currently only supports custom commands in the same format as the original !cat command - trigger with a phrase in chat, and print a random phrase from a selection.\
+## Simple commands
+**Simple commands are defined in the `/custom` folder.**\
+Simple commands trigger with a phrase in chat, and print a random phrase from a selection.\
 You can add custom trigger phrases by adding a .txt file to the `/custom` folder. The filename defines the chat command, and the contents of the file define the list of messages to randomly select from.
 
 For example, `lizard.txt` in the `/custom` folder contains two lines:
@@ -76,10 +77,11 @@ I don't know anything about lizards!
 ```
 When a player in your match types `!lizard`, the script will randomly select one of those two messages to send in chat.
 
-## Custom pattern-match commands
+## Simple pattern-match commands
+**Pattern-match commands are defined in the `/custom_pattern` folder.**\
 Pattern-match commands use python regex to find phrases in console output, and are **NOT** restricted to messages in chat. These can be used to trigger messages on certain game events, or to recognize more complex patterns in chat messages.
 
-Unlike standard custom commands, the filename is not used by the script at all. The command trigger is instead defined by the first line of the file, with all following lines representing entries in the list of possible messages.
+Unlike simple commands, the filename is not used by the script at all. The command trigger is instead defined by the first line of the file, with all following lines representing entries in the list of possible messages.
 
 For example, `test.txt` in the `/custom_pattern` folder contains these lines:
 ```
@@ -94,3 +96,24 @@ It will trigger if any matching phrase - `sobescooltestcommand1`, `sobescooltest
 
 **IMPORTANT**: This will not be restricted to chat messages, it will trigger if that phrase appears in ANY console output!\
 If you want to restrict it to only chat messages, start the pattern with `:  .*` (TWO spaces)
+
+## Python commands
+**Python commands are defined in the `/custom_py` folder.**\
+Python commands use the same pattern system as simple pattern-match commands, but they require two files - a text (`.txt`) file for the patterns, and a matching python script (`.py`) for the code to be executed when those commands are matched in console output. 
+
+**FORMAT:**
+	* Filenames for patterns and code must match. `(xyz).txt` will only associate to `(xyz).py`, and if `(xyz).py` does not exist, the command will not register.
+	* Python script for a command MUST register function `PAT_CMD(arg)`, with argument `arg` being the pattern which triggered the command as a string.
+
+**USE:**
+Command scripts have access to the FULL global environment of the main script - they can call any function defined anywhere in the script.
+
+*USEFUL COMMANDS:*
+| Function | Use |
+| :------------- |:-------------|
+| cat_message | say message in chat |
+| cat_command | execute console commands (separate with `;`) |
+
+**WARNING!!**\
+Command scripts are called with the `exec()` function, which means there is NO sandboxing or security. Code run through this system can break the script, or even break your computer.\
+*ONLY USE THIS TO RUN CODE THAT YOU TRUST!!*
