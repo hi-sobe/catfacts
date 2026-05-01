@@ -108,7 +108,7 @@ Python commands use the same pattern system as simple pattern-match commands, bu
 **USE:**
 Command scripts have access to the FULL global environment of the main script - they can call any function defined anywhere in the script.
 
-*USEFUL COMMANDS:*
+*USEFUL FUNCTIONS:*
 | Function | Use |
 | :------------- |:-------------|
 | cat_message | say message in chat |
