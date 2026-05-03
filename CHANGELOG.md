@@ -1,3 +1,10 @@
+## 1.1.1 beta
+* Added framework for better terminal output
+	* Script now prints last few sent messages to terminal
+	* Subscripts should now print to terminal using `console_log()` function instead of `print()`, as the latter will bust up my nice pretty printing
+* Chat messages sent with `cat_message()` are now rate-limited to alleviate chat timeout when players spam commands
+* Fixed certain chat outputs not being sent with cat_message
+
 ## 1.1.0 beta
 * Python commands
 	* Documentation available in README.md in `python commands` section

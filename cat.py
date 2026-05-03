@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.1.0"
+CAT_SCRIPT_VERSION = "1.1.1b"
 
 #                                                                                       .
 #             _______   _____,,,--,-----------,                                         .
@@ -41,7 +41,11 @@ import struct
 
 from pynput.keyboard import Key, Listener
 
-# import pyperclip # deprecated for now
+try:
+    import pyperclip
+except ImportError:
+    print("Module pyperclip not installed. Please run `pip install pyperclip`")
+    os._exit(0)
 
 import tkinter as tk
 from tkinter import filedialog
@@ -148,7 +152,7 @@ catfacts = [
     "Maria Assunta left her cat, Tomasso, her entire $13 million fortune when she died in 2011.",
     "Bill Clinton.",
     "Stubbs, a 17-year-old orange tabby, is mayor of the historic district of Talkeetna, Alaska.",
-    "A cat\\'s learning style is about the same as a 2- to 3-year-old child.",
+    "A cat's learning style is about the same as a 2- to 3-year-old child.",
     "A group of kittens is called a 'kindle.'",
     "A house cat could beat superstar runner Usain Bolt in the 200 meter dash.",
     "About half of the cats in the world respond to the scent of catnip.",
@@ -342,6 +346,46 @@ script_conflict_disabled = False
 allowchatprompt = False
 
 serverconmessage = ""
+
+CONSOLE_MESSAGES = [
+    "Script launched",
+    "Waiting for connection...",
+    "======================="
+]
+CONSOLE_MESSAGE_LIMIT = 6
+for i in range(CONSOLE_MESSAGE_LIMIT-len(CONSOLE_MESSAGES)):
+    CONSOLE_MESSAGES.insert(3,"")
+
+def console_raw(m, pos):
+    if pos < CONSOLE_MESSAGE_LIMIT:
+        CONSOLE_MESSAGES[pos] = m
+def console_log(m):
+    CONSOLE_MESSAGES.insert(3,m)
+    del CONSOLE_MESSAGES[CONSOLE_MESSAGE_LIMIT:]
+
+LINE_UP = "\033[1A"
+LINE_CLEAR = "\033[2K"
+
+def clearlines(n):
+    clearer=""
+    for i in range(n):
+        clearer+="\r"+LINE_UP+LINE_CLEAR
+    print(clearer, end="")
+
+def print_console_output():
+    clearlines(CONSOLE_MESSAGE_LIMIT)
+    cm=""
+    for i in range(CONSOLE_MESSAGE_LIMIT):
+        if i<len(CONSOLE_MESSAGES):
+            cm=cm+CONSOLE_MESSAGES[i][:100]+"\n"
+        else:
+            cm=cm+"\n"
+    print(cm,end="")
+
+cm1=LINE_UP
+for line in CONSOLE_MESSAGES:
+    cm1+="\n"+line
+print(cm1)
 
 debugmode = False
 silent = False
@@ -608,17 +652,26 @@ def command_cs(m):
     if debugmode==True:
         print("EXECUTED COMMAND(s):\n"+m)
 
+time_last=0
 def cat_message(m):
-    if sys.argv[1]=="tf":
-        message_rcon(m)
+    global time_last
+    cur = time.time()
+    if cur>time_last+1.5:
+        if sys.argv[1]=="tf":
+            message_rcon(m)
+        else:
+            message_cs(m)
+        console_log("MSG: " + m)
+        time_last=cur
     else:
-        message_cs(m)
+        console_log("###: (NOT SENT) " + m)
 
 def cat_command(m):
     if sys.argv[1]=="tf":
         command_rcon(m)
     else:
         command_cs(m)
+    console_log("CMD: " + m)
 
 # THESE DONT WORK
 def echo_rcon(m):
@@ -678,7 +731,9 @@ def command_dog(args):
         message_cs(currentfact)
 
 def command_killcat(a):
-    print("\nTERMINATING SCRIPT")
+    console_raw("SCRIPT TERMINATED",0)
+    console_raw("SCRIPT TERMINATED",1)
+    print_console_output()
     os._exit(0)
     raise ValueError("KILLING CAT") # if for some reason the other exit doesn't work, which i have had issues with in the past
 
@@ -970,9 +1025,6 @@ if debugmode == True:
 
 havewesentstatusyet = False
 
-LINE_UP = "\033[1A"
-LINE_CLEAR = "\033[2K"
-
 spinner_rotato = 0
 spinners=["|","/","—","\\"]
 
@@ -989,16 +1041,19 @@ for new_line in follow(path_use):
     if debugmode == True:
         print(new_line.replace("\x07", ""), end='')
     else:
+        #clearlines(CONSOLE_MESSAGE_LIMIT)
         # sys.stdout.write("\r\x1b[2\x1b[1A\x1b[2K")
-        print(LINE_CLEAR+LINE_UP+LINE_CLEAR, end="")
         # sys.stdout.flush()
         if serverconmessage != "":
-            print("\r"+serverconmessage)
+            #print("\r"+serverconmessage)
+            console_raw(serverconmessage,0)
         else:
-            print("\rIDLE")
+            #print("\rIDLE")
+            console_raw("IDLE",0)
         timeuntil = (lasttime+interval)-curtime
         if timeuntil<0 or re.search("Connecting to", serverconmessage):
-            print("\rWaiting for connection...", end="")
+            #print("\rWaiting for connection...", end="")
+            console_raw("Waiting for connection...", 1)
         else:
             #if doprompt == True and allowchatprompt == True:
             perc = (interval-timeuntil)/interval
@@ -1012,7 +1067,8 @@ for new_line in follow(path_use):
                 else:
                     percstring+="#"
             percstring+="] Next prompt in " + str(timeuntil) + " seconds"
-            print(percstring,end="")
+            # print(percstring,end="")
+            console_raw(percstring,1)
             #else:
                 #print("[         XX         ] Prompt currently blocked", end="")
     # global stuffcounter
@@ -1036,15 +1092,13 @@ for new_line in follow(path_use):
         if pattern_temp:
             f(index)
     if (curtime>lasttime+interval) and doprompt==True and allowchatprompt==True:
-        if (sys.argv[1] == "tf") and silent == False:
+        if silent == False:
             message="type !cat for a random cat fact!"
-            message_rcon(message)
-        elif (sys.argv[1] == "cs") and silent == False:
-            message="type !cat for a random cat fact!"
-            message_cs(message)
-            lasttime=curtime
+            cat_message(message)
         lasttime = curtime
         interval = random.randint(intervalmin,intervalmax)
     if havewesentstatusyet == False and game_type=="tf":
-        command_rcon("echo CAT_CONFIRM_CONNECTION_PROCESS")
+        #command_rcon("echo CAT_CONFIRM_CONNECTION_PROCESS")
         havewesentstatusyet = True
+
+    print_console_output()

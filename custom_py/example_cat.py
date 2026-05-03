@@ -7,10 +7,8 @@
 def PAT_CMD(args):
     currentfactindex=random.randint(0,len(catfacts)-1)
     currentfact = catfacts[currentfactindex]
-    if sys.argv[1] == "tf":
-        message_rcon(currentfact)
-    elif sys.argv[1] == "cs":
-        if re.search("https://github.com/hi-sobe/catfacts", currentfact):
+    if sys.argv[1] == "cs":
+        if re.search("https://github.com/hi-sobe/catfacts", currentfact): # reroll if playing cs2 to avoid advertising script there. they are just less friendly than tf2 players!
             currentfactindex=random.randint(0,len(catfacts)-1)
             currentfact = catfacts[currentfactindex]
-        message_cs(currentfact)
+    cat_message(currentfact)
