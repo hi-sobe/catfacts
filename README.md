@@ -108,11 +108,11 @@ It will trigger if any matching phrase - `sobescooltestcommand1`, `sobescooltest
 **Python commands are defined in the `/custom_py` folder.**\
 Python commands use the same pattern system as simple pattern-match commands, but they require two files - a text (`.txt`) file for the patterns, and a matching python script (`.py`) for the code to be executed when those commands are matched in console output. 
 
-**FORMAT:**\
+**FORMAT:**
 * Filenames for patterns and code must match. `(xyz).txt` will only associate to `(xyz).py`, and if `(xyz).py` does not exist, the command will not register.
 * Python script for a command MUST register function `PAT_CMD(arg)`, with argument `arg` being the pattern which triggered the command as a string.
 
-**USE:**\
+**USE:**
 * Command scripts have access to the FULL global environment of the main script - they can call any function defined anywhere in the script.
 
 *USEFUL FUNCTIONS:*
