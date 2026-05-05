@@ -1,6 +1,6 @@
 ![GATITO IMAGE](gatito.jpg)
 
-CURRENT VERSION: 1.1.2
+CURRENT VERSION: 1.1.3\
 [CHANGELOG](CHANGELOG.md)\
 If you use this software, please report issues, feedback, suggestions to me on [STEAM](https://steamcommunity.com/id/isthatsobe/) or [EMAIL](mailto:sobefromgithub@gmail.com) me at sobefromgithub@gmail.com
 
@@ -95,8 +95,11 @@ The first line defines the "trigger" pattern: `sobescooltestcommand\d`.\
 This matches the exact phrase `sobescooltestcommand`, followed by any number (represented by `\d`).\
 It will trigger if any matching phrase - `sobescooltestcommand1`, `sobescooltestcommand7`, etc - appear anywhere in any message printed to the console.
 
-**IMPORTANT**: This will not be restricted to chat messages, it will trigger if that phrase appears in ANY console output!\
-If you want to restrict it to only chat messages, start the pattern with `:  .*` (TWO spaces)
+### Pattern keywords
+| Keyword | Use |
+| :--- | :--- |
+| #CMDSTRING | Prefix for messages sent in chat by any player - prevents chat commands from being triggered by non-chat console output |
+| #CONSTRING | Triggers once when the client connects to a server |
 
 ## Python commands
 **Python commands are defined in the `/custom_py` folder.**\

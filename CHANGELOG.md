@@ -1,3 +1,10 @@
+## 1.1.3
+* Added Schrodinger's cat
+* Shortened sleeps from 500ms to 100ms to improve respoenseoveniss
+* Added new keyword for command trigger patterns: `#CONSTRING`
+	* Commands triggered by `#CONSTRING` will run every time the client connects to a new server.
+* Update prompt now shows changelog for latest version
+
 ## 1.1.2
 * Little bit of refactoring
 * All chat functions except timed prompt now handled externally through /custom* modules

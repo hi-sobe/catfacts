@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.1.2"
+CAT_SCRIPT_VERSION = "1.1.3"
 
 #                                                                                       .
 #             _______   _____,,,--,-----------,                                         .
@@ -62,7 +62,13 @@ update_data = requests.get("https://raw.githubusercontent.com/hi-sobe/catfacts/r
 update_version = re.search("CAT_SCRIPT_VERSION = \"(\\S*)\"", update_data.text)
 if update_version:
     if update_version.group(1)!=CAT_SCRIPT_VERSION:
-        response = input("\aUPDATE AVAILABLE!\nCurrent version:\t" + CAT_SCRIPT_VERSION + "\nNew version:\t" + update_version.group(1) + "\nTerminate script? [Y/N]: ")
+        changelog_data = requests.get("https://raw.githubusercontent.com/hi-sobe/catfacts/refs/heads/main/CHANGELOG.md")
+        changelog_log = re.search("(?s)## " + update_version.group(1) + "\n(.*?)\n\n", changelog_data.text)
+        print("\aUPDATE AVAILABLE!\nCurrent version: " + CAT_SCRIPT_VERSION + "\nNew version:\t " + update_version.group(1))
+        if changelog_log:
+            print("Changelog:")
+            print(changelog_log.group(1))
+        response = input("Terminate script? [Y/N]: ")
         print("If you've made any local changes to the script, remember to back them up before you update!")
         print("Download the newest version of the script at https://github.com/hi-sobe/catfacts")
         if response.lower() == "y":
@@ -319,7 +325,6 @@ PORT = 27015
 def command_rcon(m):
     global debugmode
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        #time.sleep(3)
         s.connect((HOST, PORT))
 
         message = msgpacket(rconpassword, 3)
@@ -327,7 +332,7 @@ def command_rcon(m):
         data = s.recv(1024)             # Receive packet
         # print(f"Received from server: {data}")
 
-        time.sleep(.5)
+        time.sleep(.1)
 
         message=msgpacket(m, 2)
         s.send(message)     # Send packet
@@ -337,7 +342,7 @@ def command_rcon(m):
 
         response = s.recv(4096)
 
-        time.sleep(.5)
+        time.sleep(.1)
 
         message = msgpacket_id("", 0, 254)
         s.send(message)     # Send packet
@@ -368,7 +373,7 @@ def message_rcon(m):
             data = s.recv(1024)             # Receive packet
             # print(f"Received from server: {data}")
 
-            time.sleep(.5)
+            time.sleep(.1)
             if community_compat == True:
                 message=msgpacket("say \x22" + bot_ident + fingerprint_community + m + "\x22", 2)
             else:
@@ -388,13 +393,13 @@ def message_rcon(m):
 def message_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write("say \"" + m + "\"")
-    time.sleep(0.5)
+    time.sleep(0.1)
     keyboard.press_and_release(csmsgbind)
 # same thing except not say
 def command_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write(m)
-    time.sleep(0.5)
+    time.sleep(0.1)
     keyboard.press_and_release(csmsgbind)
     if debugmode==True:
         print("EXECUTED COMMAND(s):\n"+m)
@@ -434,7 +439,7 @@ def echo_rcon(m):
         data = s.recv(1024)             # Receive packet
         # print(f"Received from server: {data}")
 
-        time.sleep(.5)
+        time.sleep(.1)
 
         message=msgpacket("echo \x22" + m + "\x22", 2)
         print(message)
@@ -444,7 +449,7 @@ def echo_rcon(m):
 def echo_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write("echo \"" + m + "\"")
-    time.sleep(0.5)
+    time.sleep(0.1)
     keyboard.press_and_release(csmsgbind)
     print("SENT MESSAGE\n"+m)
 def echo_game(m):
@@ -566,6 +571,10 @@ for file in directory.iterdir():
                         numentries=numentries+1
 directory = Path("custom_py")
 glock_balls={}
+if game_type=="tf":
+    connectionpattern = "Redownloading all lightmaps"
+else:
+    connectionpattern = "ChangeGameUIState: CSGO_GAME_UI_STATE_LOADINGSCREEN -> CSGO_GAME_UI_STATE_INGAME"
 for file in directory.iterdir():
     if file.is_file():
         commandmatch = re.search("(.*)\\.txt", file.name)
@@ -575,6 +584,7 @@ for file in directory.iterdir():
             with open("custom_py/"+file.name, 'r') as file:
                 for line in file:
                     com = re.sub("#CMDSTRING", commandstring, line).strip()
+                    com = re.sub("#CONSTRING", connectionpattern, com)
                     cmd_text=""
                     with open("custom_py/"+commandmatch.group(1)+".py", 'r') as pyfile:
                         for pyline in pyfile:
@@ -781,7 +791,7 @@ for new_line in follow(path_use):
     ## does not work unless command is sent after this loop is established
     if havewesentstatusyet == False and game_type=="tf":
         command_rcon("status")
-        time.sleep(.5)
+        time.sleep(.1)
     curtime = int(time.time())
     if debugmode == True:
         print(new_line.replace("\x07", ""), end='')
