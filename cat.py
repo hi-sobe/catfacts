@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.1.3"
+CAT_SCRIPT_VERSION = "1.1.4"
 
 #                                                                                       .
 #             _______   _____,,,--,-----------,                                         .
@@ -743,6 +743,13 @@ def playercount_handler(a, args):
     else:
         maxplayers_over_32 = False
 
+# set message cooldown
+set_cooldown_pattern="set_cooldown (\\d*)"
+def set_cooldown_handler(a,args):
+    global message_cooldown
+    message_cooldown = int(args.group(1))
+    console_log("Set message cooldown to " + str(int(args.group(1))) + " seconds")
+
 # yeah!!
 pattern_commands = {
     steamid_pattern: status_output_process,
@@ -753,7 +760,8 @@ pattern_commands = {
     serverconnecting_matchmaking_pattern: serverconnect_matchmaking_handler,
     playercount_pattern: playercount_handler,
     cs_connect_pattern: cs_connect_handler,
-    "#CS_CONNECT": cs_connect_handler
+    "#CS_CONNECT": cs_connect_handler,
+    set_cooldown_pattern: set_cooldown_handler
 }
 # yeah!!!!!
 if debugmode == True:

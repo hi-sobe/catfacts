@@ -1,3 +1,9 @@
+## 1.1.4
+* New command `set_cooldown x`
+	* Sets chat message cooldown to `x` seconds
+	* Default value of 1 second will work in most circumstances, but prolonged spam at that value will fully lock you out of chat. Higher values will prevent cooldown, but will also result in more commands not getting responses.
+	* Script commands that require arguments must be ran with `echo (command) (args)`
+
 ## 1.1.3
 * Added Schrodinger's cat
 * Shortened sleeps from 500ms to 100ms to improve respoenseoveniss

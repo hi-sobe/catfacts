@@ -1,6 +1,6 @@
 ![GATITO IMAGE](gatito.jpg)
 
-CURRENT VERSION: 1.1.3\
+CURRENT VERSION: 1.1.4\
 [CHANGELOG](CHANGELOG.md)\
 If you use this software, please report issues, feedback, suggestions to me on [STEAM](https://steamcommunity.com/id/isthatsobe/) or [EMAIL](mailto:sobefromgithub@gmail.com) me at sobefromgithub@gmail.com
 
