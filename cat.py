@@ -1,4 +1,4 @@
-CAT_SCRIPT_VERSION = "1.1.1b"
+CAT_SCRIPT_VERSION = "1.1.2"
 
 #                                                                                       .
 #             _______   _____,,,--,-----------,                                         .
@@ -22,11 +22,6 @@ CAT_SCRIPT_VERSION = "1.1.1b"
 #         ''      '  '        '''      ''''     ''             '''                      .
 #                                                                                       .
 
-#for s in header_output:
-    #print(s)
-    #header+=s+"\n"
-#print("")
-
 with open("header.txt", "r") as file:
     print(file.read())
 
@@ -41,11 +36,12 @@ import struct
 
 from pynput.keyboard import Key, Listener
 
-try:
-    import pyperclip
-except ImportError:
-    print("Module pyperclip not installed. Please run `pip install pyperclip`")
-    os._exit(0)
+# we dont really use pyperclip for anything
+#try:
+#    import pyperclip
+#except ImportError:
+#    print("Module pyperclip not installed. Please run `pip install pyperclip`")
+#    os._exit(0)
 
 import tkinter as tk
 from tkinter import filedialog
@@ -61,317 +57,66 @@ import requests
 
 import os
 
+# UPDATE CHECKER
 update_data = requests.get("https://raw.githubusercontent.com/hi-sobe/catfacts/refs/heads/main/cat.py")
 update_version = re.search("CAT_SCRIPT_VERSION = \"(\\S*)\"", update_data.text)
 if update_version:
     if update_version.group(1)!=CAT_SCRIPT_VERSION:
         response = input("\aUPDATE AVAILABLE!\nCurrent version:\t" + CAT_SCRIPT_VERSION + "\nNew version:\t" + update_version.group(1) + "\nTerminate script? [Y/N]: ")
         print("If you've made any local changes to the script, remember to back them up before you update!")
+        print("Download the newest version of the script at https://github.com/hi-sobe/catfacts")
         if response.lower() == "y":
             quit()
 
+# PROMPT GAME TYPE IF NO ARGUMENTS PROVITED
 if len(sys.argv)==1:
     response = input("start in cs mode? [Y/N]: ")
     if response.lower() == "y":
         sys.argv.append("cs")
     elif response.lower() == "n" or response == "":
         sys.argv.append("tf")
-
 game_type = ""
-
 if sys.argv[1]=="cs": # give time to alt tab for cs for keybind
     game_type = "cs"
     time.sleep(2)
 elif sys.argv[1]=="tf":
     game_type = "tf"
 
-catfacts = [
-    "A house cat's genome is 95.6 percent tiger, and they share many behaviors with their jungle ancestors, such as scent marking by scratching, prey play, prey stalking, pouncing, chinning, and urine marking.",
-    "Cats are believed to be the only mammals who don't taste sweetness.",
-    "Cats are nearsighted, but their peripheral vision and night vision are much better than that of humans.",
-    "Cats are supposed to have 18 toes (five toes on each front paw; four toes on each back paw).",
-    "Cats can jump up to six times their length.",
-    "Cats' claws all curve downward, which means that they're can't climb down trees head-first.",
-    "Cats' collarbones don't connect to their other bones, as these bones are buried in their shoulder muscles.",
-    "Cats have 230 bones, while humans only have 206.",
-    "Cats have an extra organ that allows them to taste scents on the air, which is why your cat stares at you with her mouth open from time to time.",
-    "Cats have whiskers on the backs of their front legs, as well.",
-    "Cats have nearly twice the amount of neurons in their cerebral cortex as dogs.",
-    "Cats have the largest eyes relative to their head size of any mammal.",
-    "Cats make very little noise when they walk around. The thick, soft pads on their paws allow them to sneak up on their prey — or you!",
-    "Cats' rough tongues can lick a bone clean of any shred of meat.",
-    "Cats use their long tails to balance themselves when they're jumping or walking along narrow ledges.",
-    "Cats use their whiskers to 'feel' the world around them in an effort to determine which small spaces they can fit into.",
-    "Cats walk like camels and giraffes: They move both of their right feet first, then move both of their left feet. No other animals walk this way.",
-    "Male cats are more likely to be left-pawed, while female cats are more likely to be right-pawed.",
-    "Though cats can notice the fast movements of their prey, it often seems to them that slow-moving objects are actually stagnant.",
-    "Some cats are ambidextrous, but 40 percent are either left- or right-pawed.",
-    "Some cats can swim.",
-    "There are cats who have more than 18 toes. These extra-digit felines are referred to as being 'polydactyl.'",
-    "A cat's average lifespan increased by a year over the span of time between 2002 and 2012, according to a study by Banfield Pet Hospital.",
-    "According to The Huffington Post, cats typically sleep for 12 to 16 hours a day.",
-    "Cats are crepuscular, which means that they\\'re most active at dawn and dusk.",
-    "Cats are fastidious creatures about their 'bathroom.' If you have more than one cat, you should have one litter box for each.",
-    "Cats can spend up to a third of their waking hours grooming.",
-    "Cats live longer when they stay indoors.",
-    "Cats' purring may be a self-soothing behavior, since they make this noise when they're ill or distressed, as well as when they're happy.",
-    "Cats will refuse an unpalatable food to the point of starvation.",
-    "Despite popular belief, many cats are actually lactose intolerant.",
-    "Female cats have the ability to get pregnant when they are only 4 months old!",
-    "It's believed that catnip produces an effect similar to LSD or marijuana in cats.",
-    "Your cat's grooming process stimulates blood flow to his skin, regulates his body temperature and helps him relax.",
-    "A cat with a question-mark-shaped tail is asking, 'Want to play?'",
-    "A slow blink is a 'kitty kiss.' This movement shows contentment and trust.",
-    "Cats have a unique 'vocabulary' with their owner — each cat has a different set of vocalizations, purrs and behaviors.",
-    "Cats have up to 100 different vocalizations — dogs only have 10.",
-    "Cats find it threatening when you make direct eye contact with them.",
-    "Cats mark you as their territory when they rub their faces and bodies against you, as they have scent glands in those areas.",
-    "Cats may yawn as a way to end a confrontation with another animal. Think of it as their 'talk to the hand' gesture.",
-    "If cats are fighting, the cat that's hissing is the more vulnerable one.",
-    "If your cat approaches you with a straight, almost vibrating tail, this means that she is extremely happy to see you.",
-    "Cat milk!",
-    "Meowing is a behavior that cats developed exclusively to communicate with people.",
-    "Meowing is a behavior",
-    "When a cat exposes his belly, they don't always want a belly rub. Cats do this when they're relaxed and showing trust.",
-    "When cats hit you with retracted claws, they're playing, not attacking.",
-    "When your cat sticks his butt in your face, he is doing so as a gesture of friendship.",
-    "Your cat drapes its tail over another cat, your dog, or you as a symbol of friendship.",
-    "Cats are very fussy about their water bowls; some prefer to ignore their bowls entirely in favor of drinking from the sink faucet.",
-    "Cats groom other cats — and sometimes people — in a ritual called allogrooming.",
-    "Cats like to sleep on things that smell like their owners, such as their pillows and dirty laundry (ick!).",
-    "Cats love to sleep in laundry baskets, too, because they're basically hiding places with peep holes.",
-    "Cats often attack your ankles when they're bored.",
-    "Certain cats go crazy for foods you wouldn't expect, like olives, potato chips, and the hops in beer.",
-    "For some reason, cats really dislike citrus scents.",
-    "If you can't find your cat, you should look in a box or a bag, as these are some of their favorite hiding spots!",
-    "Male cats who try to get to a female in heat can show very bizarre behavior — for example, some slide down chimneys!",
-    "Many cats like to lick their owner's freshly washed hair.",
-    "Some cats love the smell of chlorine.",
-    "Thieving behavior is not uncommon among cats. They will often grab objects that remind them of prey.",
-    "A green cat was born in Denmark in 1995.",
-    "Maria Assunta left her cat, Tomasso, her entire $13 million fortune when she died in 2011.",
-    "Bill Clinton.",
-    "Stubbs, a 17-year-old orange tabby, is mayor of the historic district of Talkeetna, Alaska.",
-    "A cat's learning style is about the same as a 2- to 3-year-old child.",
-    "A group of kittens is called a 'kindle.'",
-    "A house cat could beat superstar runner Usain Bolt in the 200 meter dash.",
-    "About half of the cats in the world respond to the scent of catnip.",
-    "Cat breeders are called 'catteries.'",
-    "Cats can be toilet-trained.",
-    "Cats can be trained to kill for pay and collect bounties, but not to return the bounties to their owner.",
-    "Cats can drink sea water in order to survive. (In case you're wondering, we can't.)",
-    "Cats don't have an incest taboo, so they may choose to mate with their brothers and sisters.",
-    "Cats dream, just like people do.",
-    "Cats have contributed to the extinction of 33 different species.",
-    "Cats perceive people as big, hairless cats.",
-    "Cats perceive people as big, hairless noobs.",
-    "Cats were first brought to the Americas in colonial times to get rid of rodents.",
-    "Collective nouns for adult cats include 'clowder,' 'clutter,' 'glaring,' and 'pounce.'",
-    "Each cat's nose print is unique, much like human fingerprints.",
-    "Every Scottish Fold cat in the world can trace its heritage back to the first one, which was found in Scotland in the 1960s.",
-    "It's not uncommon to see cats in food stores in big cities as a form of free — and adorable — pest control.",
-    "Kittens in the same litter can have more than one father. This is because the female cat releases multiple eggs over the course of a few days when she is in heat.",
-    "Male cats are the most sensitive to catnip, while kittens under 3 months old have no response at all.",
-    "Most world languages have a similar word to describe the 'meow' sound.",
-    "Some 700 million feral cats live in the United States.",
-    "Some 700 billion feral cats live in the United States.",
-    "Some 700 trillion feral cats live in the United States.",
-    "Studies suggest that domesticated cats first appeared around 3600 B.C.",
-    "The first known cat video was recorded in 1894.",
-    "There are about 88 million pet cats in the United States, which makes them the most popular pet in the country!",
-    "According to cat researcher ''sonicboom'', cats have eyes like serpents.",
-    "On average, cats spend 2/3 of every day sleeping",
-    "Unlike dogs, cats do not have a sweet tooth",
-    "When a cat chases its prey, it keeps its head level",
-    "The technical term for a cat's hairball is a bezoar",
-    "A group of cats is called a clowder",
-    "Female cats tend to be right pawed, while male cats are more often left pawed",
-    "A cat cannot climb head first down a tree because its claws are curved the wrong way",
-    "Cats make about 100 different sounds",
-    "Cats make about 4 different sounds",
-    "Cats can make over 100,000,000 different sounds",
-    "A cat's brain is biologically more similar to a human brain than it is to a dog's",
-    "There are more than 500 million domestic cats in the world",
-    "There are more than 500 billion domestic cats in the world",
-    "There are more than 500 trillion domestic cats in the world",
-    "There are less than 500 domestic cats in the world",
-    "Approximately 24 cat skins can make a coat",
-    "During the Middle Ages, cats were associated with witchcraft",
-    "Cats are the most popular pet in North American Cats are North America's most popular pets",
-    "Approximately 40,000 people are bitten by cats in the U.S.",
-    "A cat's hearing is better than a dog's",
-    "A cat can travel at a top speed of approximately 31 mph over a short distance",
-    "A cat can travel at a top speed of approximately 49 mph over a short distance",
-    "A cat can travel at a top speed of approximately 71 mph over a short distance",
-    "A cat can travel at a top speed of over 200 mph over a short distance",
-    "A cat can jump up to five times its own height in a single bound",
-    "Some cats have survived falls of over 20 meters",
-    "Researchers are unsure exactly how a cat purrs",
-    "When a family cat died in ancient Egypt, family members would mourn by shaving off their eyebrows",
-    "In 1888, more than 300,000 mummified cats were found an Egyptian cemetery",
-    "Most cats give birth to a litter of between one and nine kittens",
-    "Smuggling a cat out of ancient Egypt was punishable by death",
-    "The earliest ancestor of the modern cat lived about 30 million years ago",
-    "The biggest wildcat today is the Siberian Tiger",
-    "The smallest wildcat today is the Black-footed cat",
-    "Many Egyptians worshipped the goddess Bast, who had a woman's body and a cat's head",
-    "Mohammed loved cats and reportedly his favorite cat, Muezza, was a tabby",
-    "The smallest pedigreed cat is a Singapura, which can weigh just 4 lbs",
-    "Cats hate the water because their fur does not insulate well when it's wet",
-    "The Egyptian Mau is probably the oldest breed of cat",
-    "A cat usually has about 12 whiskers on each side of its face",
-    "A cat's eyesight is both better and worse than humans",
-    "A cat's jaw can't move sideways, so a cat can't chew large chunks of food",
-    "A cat almost never meows at another cat, mostly just humans",
-    "A cat's back is extremely flexible because it has up to 53 loosely fitting vertebrae",
-    "Many cat owners think their cats can read their minds",
-    "Cats can read their owners' minds",
-    "Two members of the cat family are distinct from all others: the clouded leopard and the cheetah",
-    "In Japan, cats are thought to have the power to turn into super spirits when they die",
-    "Most cats had short hair until about 100 years ago, when it became fashionable to breed cats",
-    "Cats have 32 muscles that control the outer ear",
-    "Cats have about 20,155 hairs per square centimeter",
-    "The first cat show was organized in 1871 in London",
-    "A cat has 230 bones in its body",
-    "Foods that should not be given to cats include onions, garlic, green tomatoes, raw potatoes, chocolate, grapes, and raisins",
-    "A cat's heart beats nearly twice as fast as a human heart",
-    "Cats spend nearly 1/3 of their waking hours cleaning themselves",
-    "Grown cats have 30 teeth",
-    "The largest cat breed by mean weight is the Savannah, at 10kg",
-    "Cats are extremely sensitive to vibrations",
-    "The cat who holds the record for the longest non-fatal fall is Andy",
-    "The richest cat is Blackie who was left £15 million by his owner, Ben Rea",
-    "Around the world, cats take a break to nap - a catnap - 425 million times a day",
-    "On average, a cat will nap around 425 million times a day",
-    "In homes with more than one cat, it is best to have cats of the opposite sex. They tend to be better housemates.",
-    "Cats are unable to detect sweetness in anything they taste",
-    "Perhaps the oldest cat breed on record is the Egyptian Mau, which is also the Egyptian language's word for cat",
-    "In one litter of kittens, there could be multiple father cats",
-    "Teeth of cats are sharper when they're kittens. After six months, they lose their needle-sharp milk teeth",
-    "Collectively, kittens yawn about 200 million times per hour",
-    "Marbled cats!",
-    "Cats show affection and mark their territory by rubbing on people. Glands on their face, tail and paws release a scent to make its mark",
-    "Maine Coons are the most massive breed of house cats. They can weigh up to around 24 pounds",
-    "Maine Coons are the most massive breed of house cats. They can weigh up to around 48 pounds",
-    "Maine Coons are the most massive breed of house cats. They can weigh up to around 130 pounds",
-    "Maine Coons are the most massive breed of house cats. They can weigh up to around 17 pounds",
-    "Maine Coons are the most massive breed of house cats. They can weigh up to around 350 pounds",
-    "If you killed a cat in the ages of Pharaoh, you could've been put to death",
-    "Most cats will eat 7 to 20 small meals a day. This interesting fact is brought to you by Nature's Recipe®",
-    "Most cats don't have eyelashes",
-    "Call them wide-eyes: cats are the mammals with the largest eyes",
-    "Cats who eat too much tuna can become addicted, which can actually cause a Vitamin E deficiency",
-    "Cats can pick up on your tone of voice, so sweet-talking to your cat has more of an impact than you think",
-    "Some cats can survive falls from as high up as 65 feet or more",
-    "Genetically, cats' brains are more similar to that of a human than a dog's brain",
-    "If your cat's eyes are closed, it's not necessarily because it's tired. A sign of closed eyes means your cat is happy or pleased",
-    "Cats CAN be lefties and righties, just like us. More than forty percent of them are, leaving some ambidextrous",
-    "Each side of a cat's face has about 12 whiskers",
-    "Eating grass rids a cats' system of any fur and helps with digestion",
-    "Cats have 24 more bones than humans",
-    "Black cats aren't an omen of ill fortune in all cultures. In the UK and Australia, spotting a black cat is good luck",
-    "The Maine Coon is appropriately the official State cat of its namesake state",
-    "The world's most fertile cat, whose name was Dusty, gave birth to 420 kittens in her lifetime",
-    "Sometimes called the Canadian Hairless, the Sphynx is the first cat breed that has lasted this long—the breed has been around since 1966",
-    "Sir Isaac Newton, among his many achievements, invented the cat flap door",
-    "In North America, cats are a more popular pet than dogs. Nearly 73 million cats and 63 million dogs are kept as household pets",
-    "Today, cats are living twice as long as they did just 50 years ago",
-    "Outdoor cats' lifespan averages at about 3 to 5 years; indoor cats have lives that last 16 years or more",
-    "Cats have the cognitive ability to sense a human's feelings and overall mood",
-    "Cats prefer their food at room temperature—not too hot, not too cold",
-    "Bobtails are known to have notably short tails -- about half or a third the size of the average cat",
-    "A fingerprint is to a human as a nose is to a cat",
-    "Cats have over 100 sounds in their vocal repertoire, while dogs only have 10",
-    "Cats came to the Americas from Europe as pest controllers in the 1750s",
-    "According to the Association for Pet Obesity Prevention (APOP), about 50 million of our cats are overweight",
-    "Cats use their whiskers to measure openings, indicate mood and general navigation",
-    "Blue-eyed cats have a high tendency to be deaf, but not all cats with blue eyes are deaf",
-    "Ancient Egyptians first adored cats for their finesse in killing rodents—as far back as 4,000 years ago",
-    "The color of York Chocolates becomes richer with age. Kittens are born with a lighter coat than the adults",
-    "Because of widespread cat smuggling in ancient Egypt, the exportation of cats was a crime punishable by death",
-    "Cats actually have dreams, just like us. They start dreaming when they reach a week old",
-    "It is important to include fat in your cat's diet because they're unable to make the nutrient in their bodies on their own",
-    "A cat's field of vision does not cover the area right under its nose",
-    "Talk about Facetime: Cats greet one another by rubbing their noses together",
-    "Cats sleep 16 hours of any given day",
-    "Although it is known to be the tailless cat, the Manx can be born with a stub or a short tail",
-    "A Selkirk slowly loses its naturally-born curly coat, but it grows again when the cat is around 8 months",
-    "A cat's heart beats almost double the rate of a human heart, from 110 to 140 beats per minute",
-    "Ragdoll cats live up to their name: they will literally go limp, with relaxed muscles, when lifted by a human",
-    "Unlike most other cats, the Turkish Van breed has a water-resistant coat and enjoys being in water",
-    "Webbed feet on a cat? The Peterbald's got 'em! They make it easy for the cat to get a good grip on things with skill",
-    "Despite appearing like a wild cat, the Ocicat does not have an ounce of wild blood",
-    "Cat's back claws aren't as sharp as the claws on their front paws",
-    "A group of kittens is called a kindle, and clowder is a term that refers to a group of adult cats",
-    "A third of cats' time spent awake is usually spent cleaning themselves",
-    "A female cat is also known to be called a queen or a molly",
-    "Want to call a hairball by its scientific name? Next time, say the word bezoar",
-    "Cats have a 5 toes on their front paws and 4 on each back paw",
-    "In 2001, wildlife researchers discovered a previously unknown breed of cat called the \"dog\"",
-    "Twenty-five percent of cat owners use a blow drier on their cats after bathing",
-    "Rather than nine months, cats' pregnancies last about nine weeks",
-    "It has been said that the Ukrainian Levkoy has the appearance of a dog, due to the angles of its face",
-    "A cat can reach up to five times its own height per jump",
-    "Cats have a strong aversion to anything citrus",
-    "Cats would rather starve themselves than eat something they don't like.",
-    "The Snow Leopard, a variety of the California Spangled Cat, always has blue eyes",
-    "The two outer layers of a cat's hair are called, respectively, the guard hair and the awn hair",
-    "When a household cat died in ancient Egypt, its owners showed their grief by shaving their eyebrows",
-    "Caution during Christmas: poinsettias may be festive, but they're poisonous to cats",
-    "Most kittens are born with blue eyes, which then turn color with age",
-    "A cat's meow is usually not directed at another cat, but at a human. To communicate with other cats, they will usually hiss, purr and spit.",
-    "According to the Guinness World Records, the largest domestic cat litter totaled at 19 kittens, four of them stillborn",
-    "As temperatures rise, so do the number of cats - cats are known to breed in warm weather.",
-    "Cats' rough tongues enable them to clean themselves efficiently and to lick clean an animal bone",
-    "Most cat litters contain four to six kittens",
-    "A Japanese cat figurine called Maneki-Neko is believed to bring good luck",
-    "One of Muhammad's companions was nicknamed Abu Hurairah, or Father of the Kitten, because he loved cats",
-    "Elvis Presley's Chinese name is Mao Wong, or Cat King",
-    "They meow!",
-    "Cats will NOT eat their owners after they die...but they will cook them!",
-    "80\x25 of cats can speak and understand English, but they don't.",
-    "You can download this script at: https://github.com/hi-sobe/catfacts",
-    "Did you know? 98% of cats in the world are the same cat!"
-
-]
-
-path_tf = ""
-path_cs = ""
-path_cs_cfg = ""
-
-rconpassword = ""
-
+# set to True if another script user is detected in chat
 script_conflict_disabled = False
 
+# set to True when connecting to server, can be disabled using cat_off
 allowchatprompt = False
 
+# number of lines to display in terminal output (default: 10)
+CONSOLE_MESSAGE_LIMIT = 10
+# terminal output handler
 serverconmessage = ""
-
 CONSOLE_MESSAGES = [
     "Script launched",
     "Waiting for connection...",
     "======================="
 ]
-CONSOLE_MESSAGE_LIMIT = 6
 for i in range(CONSOLE_MESSAGE_LIMIT-len(CONSOLE_MESSAGES)):
     CONSOLE_MESSAGES.insert(3,"")
 
+# print text to specific line in terminal output, defined by pos
+# lines 0-2 are reserved for connection status, prompt status, divider
 def console_raw(m, pos):
     if pos < CONSOLE_MESSAGE_LIMIT:
         CONSOLE_MESSAGES[pos] = m
+# print line of text to output log beneath divider
 def console_log(m):
     CONSOLE_MESSAGES.insert(3,m)
     del CONSOLE_MESSAGES[CONSOLE_MESSAGE_LIMIT:]
 
 LINE_UP = "\033[1A"
 LINE_CLEAR = "\033[2K"
-
 def clearlines(n):
     clearer=""
     for i in range(n):
         clearer+="\r"+LINE_UP+LINE_CLEAR
     print(clearer, end="")
-
 def print_console_output():
     clearlines(CONSOLE_MESSAGE_LIMIT)
     cm=""
@@ -381,12 +126,13 @@ def print_console_output():
         else:
             cm=cm+"\n"
     print(cm,end="")
-
 cm1=LINE_UP
 for line in CONSOLE_MESSAGES:
     cm1+="\n"+line
 print(cm1)
 
+# debugmode: raw print() all tf2 console output, plus some debug info
+# silent:    disable chat prompt
 debugmode = False
 silent = False
 if len(sys.argv)>=3:
@@ -398,6 +144,11 @@ if len(sys.argv)>=3:
         silent = True
         debugmode = True
 
+# load script settings
+path_tf = ""
+path_cs = ""
+path_cs_cfg = ""
+rconpassword = ""
 try:
     with open("catsettings.txt", "r") as f:
         content = f.read()
@@ -418,18 +169,7 @@ try:
 except FileNotFoundError:
     with open("catsettings.txt", "a") as f:
         f.write("CAT SETTINGS\n")
-
-#if debugmode == True:
-    #print(path_tf)
-
-# IF YOU HAVE A DRIVE LABELED U:\ AND A FILE ON THAT DRIVE CALLED "fuck" THIS PART WILL BREAK THE SCRIPT!!!
-if not path_tf:
-    path_tf = "U:\\fuck" 
-if not path_cs:
-    path_cs = "U:\\fuck" 
-if not path_cs_cfg:
-    path_cs_cfg = "U:\\fuck" 
-
+# userinput for settings on first load
 if sys.argv[1]=="tf":
     if rconpassword == "":
         rconpassword = input("rcon password not set! please enter your rcon password: ")
@@ -449,7 +189,6 @@ if sys.argv[1]=="tf":
             raise ValueError("whaahwawawawawawa aaoouuuuu")
         with open("catsettings.txt", "a") as f:
             f.write("path_tf: " + path_tf + "\n")
-
 if sys.argv[1]=="cs":
     if debugmode==True:
         print("LAUNCHING IN CS MODE")
@@ -476,28 +215,70 @@ if sys.argv[1]=="cs":
         with open("catsettings.txt", "a") as f:
             f.write("path_cs_cfg: " + path_cs_cfg + "\n")
 
-HOST = "127.0.0.1"
-PORT = 27015
+currentfact="" # i dont know why i define this here lool watevere
 
-def follow(filename):
-    with open(filename, 'r', errors="replace") as f:
-        # Move to the end of the file if you only want new data
-        f.seek(0, 2) 
-        while True:
-            try:
-                line = f.readline()
-                if not line:
-                    time.sleep(0.1)  # Sleep briefly to avoid 100% CPU usage
-                    continue
-                yield line
-            except UnicodeDecodeError:
-                if debugmode == True:
-                    print("Unicode decode error in console output: you can probably ignore this")
+stuffcounter = -1
 
-currentfact=""
+# simulate this keypress for cs2, since rcon doesn't work
+csmsgbind = "f13"
+
+# timing for chat prompt in seconds
+# every time chat prompt is sent, interval is set to a random value between intervalmin and intervalmax
+lasttime = 0
+interval = 120
+intervalmin = 90
+intervalmax = 180
+
+# used to distinguish chat messages from ordinary console output
+# chat messages separated by two spaces in tf2, one space in cs2
+path_use = ""
+commandstring = ""
+if sys.argv[1]=="tf":
+    path_use=path_tf
+    commandstring = ":  "
+    exitstring = "Shutdown function"
+else:
+    path_use=path_cs
+    commandstring = ": "
+    exitstring = "Source2Shutdown"
+
+# fingerprint used to detect other script users, shutdown all but one
+bot_ident="\x9d"
+fingerprint_chars = "\x01\x02\x03\x04\x05\x06\x08\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1c\x1d\x1e\x1f"
+fingerprint = ""
+fingerprint_community=""
+# reroll fingerprint, runs every time client connects to a server
+def roll_fingerprint():
+    global fingerprint
+    global fingerprint_community
+    fingerprint = ""
+    fingerprint_community=""
+    for i in range(3):
+        fingerprint=fingerprint+fingerprint_chars[random.randint(0,len(fingerprint_chars)-1)]
+    if debugmode == True:
+        print("local fingerprint: ", end="")
+        print(fingerprint.encode())
+    else:
+        console_log("set pub fingerprint: " + str(fingerprint.encode())[2:-1])
+    fingerprint_community = "["+str(random.randint(0,999))+"] "
+    if debugmode == True:
+        print("local community fingerprint: ", end="")
+        print(fingerprint_community)
+    else:
+        console_log("set community fingerprint: " + fingerprint_community)
+    print_console_output()
+roll_fingerprint()
+
+# default to using community compatibility mode, set to False when client connects to a valve pub server
+community_compat = True
+
+## RCON STUFF HERE 
+
+# generate packet structure for rcon commands
+# cmdindex is arbitrary, rcon server expects an id for every packet
+# if you touch anything else everything will fall apart
 
 cmdindex = 8 # oi dpmt lmpw ;p; lol lol Watver
-
 def msgpacket(msg, cmdtype):
     global cmdindex
     # global cmdtype
@@ -512,7 +293,6 @@ def msgpacket(msg, cmdtype):
     fullpacket=struct.pack("<iii", bigness, cmdindex, cmdtype) + msg.encode() + b"\x00\x00"
     # print(fullpacket)
     return fullpacket
-
 def msgpacket_id(msg, cmdtype, customid):
     global cmdindex
     # global cmdtype
@@ -528,48 +308,14 @@ def msgpacket_id(msg, cmdtype, customid):
     # print(fullpacket)
     return fullpacket
 
-stuffcounter = -1
-
-path_use = ""
-commandstring = ""
-
-csmsgbind = "f13"
-
-lasttime = 0
-interval = 120
-intervalmin = 90
-intervalmax = 180
-
-if sys.argv[1]=="tf":
-    path_use=path_tf
-    commandstring = ":  "
-    exitstring = "Shutdown function"
-else:
-    path_use=path_cs
-    commandstring = ": "
-    exitstring = "Source2Shutdown"
-
-# bot_ident = "\x10\x10\x10"  # used to detect other script users, shutdown all but one
-bot_ident="\x9d"
-fingerprint_chars = "\x01\x02\x03\x04\x05\x06\x08\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1c\x1d\x1e\x1f"
-fingerprint = ""
-for i in range(3):
-    fingerprint=fingerprint+fingerprint_chars[random.randint(0,len(fingerprint_chars)-1)]
-if debugmode == True:
-    print("local fingerprint: ", end="")
-    print(fingerprint.encode())
-fingerprint_community = "["+str(random.randint(0,999))+"] "
-if debugmode == True:
-    print("local community fingerprint: ", end="")
-    print(fingerprint_community)
-
-community_compat = True
-
-# statuscommand = b"\x10\x00\x00\x00\x00\x00\x00\x00\x02\x00\x00\x00\x73\x74\x61\x74\x75\x73\x00\x00"
-
 # emptyresponse = b"\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00" # for some reason this is what the protocol docs say it should be
 emptyresponse = b"\x00\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00"               # but this is what it actually is =D
 
+# for some reason valve allows client to accept rcon commands from localhost :D
+HOST = "127.0.0.1"
+PORT = 27015
+
+# execute command (m) as tf2 console command thru rcon
 def command_rcon(m):
     global debugmode
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -608,6 +354,7 @@ def command_rcon(m):
                 # print("whoop!")
     return data
 
+# execute command (say "m") as tf2 console command
 blockmessages = False
 def message_rcon(m):
     global debugmode
@@ -637,13 +384,13 @@ def message_rcon(m):
                 print(f"Received from server: {data}")
             # print(f"Received from server: {data}")
 
+# write command (say "m") to cs2 config "sobecatfacts" and simulate keypress to key defined by csmsgbind to execute it
 def message_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write("say \"" + m + "\"")
     time.sleep(0.5)
     keyboard.press_and_release(csmsgbind)
-    # print("SENT MESSAGE\n"+m)
-
+# same thing except not say
 def command_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write(m)
@@ -652,11 +399,15 @@ def command_cs(m):
     if debugmode==True:
         print("EXECUTED COMMAND(s):\n"+m)
 
+# cooldown time between chat messages, to prevent chat cooldown
+message_cooldown = 1
 time_last=0
+
+# universal message handler
 def cat_message(m):
     global time_last
     cur = time.time()
-    if cur>time_last+1.5:
+    if cur>time_last+message_cooldown:
         if sys.argv[1]=="tf":
             message_rcon(m)
         else:
@@ -665,7 +416,7 @@ def cat_message(m):
         time_last=cur
     else:
         console_log("###: (NOT SENT) " + m)
-
+# universal command handler
 def cat_command(m):
     if sys.argv[1]=="tf":
         command_rcon(m)
@@ -673,7 +424,7 @@ def cat_command(m):
         command_cs(m)
     console_log("CMD: " + m)
 
-# THESE DONT WORK
+# these dont work but i am afraid to remove them
 def echo_rcon(m):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
@@ -690,46 +441,19 @@ def echo_rcon(m):
         s.send(message)     # Send packet
         data = s.recv(4096)             # Receive packet
         # print(f"Received from server: {data}")
-def echo_cs(m): # THESE DONT WORK
+def echo_cs(m):
     with open(path_cs_cfg, "w") as f:
         f.write("echo \"" + m + "\"")
     time.sleep(0.5)
     keyboard.press_and_release(csmsgbind)
     print("SENT MESSAGE\n"+m)
-def echo_game(m):   # THESE DONT WORK
+def echo_game(m):
     if sys.argv[1] == "tf":
         echo_rcon(m)
     elif sys.argv[1] == "cs":
         echo_cs(m)
 
-#def command_cat(args):
-#    currentfactindex=random.randint(0,len(catfacts)-1)
-#    currentfact = catfacts[currentfactindex]
-#    if sys.argv[1] == "tf":
-#        message_rcon(currentfact)
-#    elif sys.argv[1] == "cs":
-#        if re.search("https://github.com/hi-sobe/catfacts", currentfact): # dont advertise this script to cs players because they are racist and cannot be trusted
-#            currentfactindex=random.randint(0,len(catfacts)-1)
-#            currentfact = catfacts[currentfactindex]
-#        message_cs(currentfact)
-
-def command_dog(args):
-    currentfactindex=random.randint(0,len(catfacts)-1)
-    currentfact = catfacts[currentfactindex]
-    if re.search("https://github.com/hi-sobe/catfacts", currentfact): # dont advertise github repo /dogfacts because it does not exist
-        currentfactindex=random.randint(0,len(catfacts)-1)
-        currentfact = catfacts[currentfactindex]
-    currentfact = currentfact.replace("cat", "dog")
-    currentfact = currentfact.replace("kitten", "puppy")
-    currentfact = currentfact.replace("kitty", "puppy")
-    currentfact = currentfact.replace("Cat", "Dog")
-    currentfact = currentfact.replace("Kitten", "Puppy")
-    currentfact = currentfact.replace("Kitty", "Puppy")
-    if sys.argv[1] == "tf":
-        message_rcon(currentfact)
-    elif sys.argv[1] == "cs":
-        message_cs(currentfact)
-
+# kill script
 def command_killcat(a):
     console_raw("SCRIPT TERMINATED",0)
     console_raw("SCRIPT TERMINATED",1)
@@ -737,11 +461,10 @@ def command_killcat(a):
     os._exit(0)
     raise ValueError("KILLING CAT") # if for some reason the other exit doesn't work, which i have had issues with in the past
 
-def ident_handle(a):
-    localid = 0#math.randint(1,1000)
-
-maxplayers_over_32 = False
+# run after server connection completed
+# currently triggered by phrase "Redownloading all lightmaps", pretty sure this always works. 
 lightmaps = "Redownloading all lightmaps"
+maxplayers_over_32 = False
 def connectionfinished_handler(a):
     global serverconmessage
     global blockmessages
@@ -750,16 +473,14 @@ def connectionfinished_handler(a):
     global maxplayers_over_32
     output = command_rcon("status")
     blockmessages = False
+    roll_fingerprint()
     lasttime = 0 # Allow script to send cat prompt immediately upon connecting to a server
-
-    #print("\rServer type not determined, assuming community server.", end="")
     serverconmessage = "Server type not determined, assuming community server."
     community_compat=True
     if maxplayers_over_32 == False:
         allowchatprompt = False
-    # print(output)
-    # print(statustext)
 
+# turn chat prompts on/off
 doprompt = True
 def command_prompton(a):
     global doprompt
@@ -767,7 +488,7 @@ def command_prompton(a):
     if debugmode==True:
         print("PROMPT ON")
     else:
-        serverconmessage = "PROMPT ON"
+        console_log("Turned prompt on.")
     # echo_game("PROMPT ON")
 def command_promptoff(a):
     global doprompt
@@ -775,16 +496,16 @@ def command_promptoff(a):
     if debugmode==True:
         print("PROMPT OFF")
     else:
-        print("PROMPT OFF")
-    # echo_game("PROMPT OFF")
+        console_log("Turned prompt off.")
+        console_raw("PROMPT OFF",1)
 
-# #    670 "sobe"              [U:1:1315524182]    22:21       46    0 active
-
+# ran by typing "listplayerids" in tf2 console, can use to get steamids of chat users
 playerids = {}
 def printplayers(a):
     for player, playerid in playerids.items():
         print(player + ": STEAMID " + playerid)
 
+# turn whole thang on/off using script conflict detector
 def enablescript(a):
     global script_conflict_disabled
     script_conflict_disabled = False
@@ -792,6 +513,7 @@ def disablescript(a):
     global script_conflict_disabled
     script_conflict_disabled = True
 
+# turn community compat mode on/off (will be set automatically when status command is ran)
 def forcecommunitycompat_on(c):
     global community_compat
     community_compat = True
@@ -799,10 +521,10 @@ def forcecommunitycompat_off(c):
     global community_compat
     community_compat = False
 
+# hook commands
 file_commands = {}
 file_pattern_commands = {}
 file_py_commands = {}
-
 directory = Path("custom")
 for file in directory.iterdir():
     if file.is_file():
@@ -821,7 +543,6 @@ for file in directory.iterdir():
                     if debugmode==True:
                         print(str(numentries)+": "+line.strip())
                     numentries=numentries+1
-
 directory = Path("custom_pattern")
 for file in directory.iterdir():
     if file.is_file():
@@ -843,8 +564,8 @@ for file in directory.iterdir():
                         if debugmode==True:
                             print(str(numentries)+": "+line.strip())
                         numentries=numentries+1
-
 directory = Path("custom_py")
+glock_balls={}
 for file in directory.iterdir():
     if file.is_file():
         commandmatch = re.search("(.*)\\.txt", file.name)
@@ -854,12 +575,14 @@ for file in directory.iterdir():
             with open("custom_py/"+file.name, 'r') as file:
                 for line in file:
                     com = re.sub("#CMDSTRING", commandstring, line).strip()
-                    glock_balls = {}
                     cmd_text=""
                     with open("custom_py/"+commandmatch.group(1)+".py", 'r') as pyfile:
                         for pyline in pyfile:
                             cmd_text+=pyline
                     exec(cmd_text, globals=globals(), locals=glock_balls)
+                    # PUSHES ALL DEFINED VARIABLES TO GLOBAL SPACE
+                    # THIS CAN BREAK MAIN SCRIPT!! BE CAREFUL!!
+                    globals().update(glock_balls)
                     if "PAT_CMD" in glock_balls:
                         file_py_commands[com] = glock_balls["PAT_CMD"]
                         if debugmode == True:
@@ -871,19 +594,12 @@ for file in directory.iterdir():
 def do_file_command(c,a):
     selekta = random.randint(0,len(a)-1)
     message_rcon(a[selekta])
-    # print(c,a)
-
-cat_index = commandstring + "!cat"
-dog_index = commandstring + "!dog"
 
 commands = {
-#    cat_index: command_cat,
-    dog_index: command_dog,
     "killcat": command_killcat,
     exitstring: command_killcat,
-    "caton": command_prompton,
-    "catoff": command_promptoff,
-    bot_ident: ident_handle,
+    "cat_on": command_prompton,
+    "cat_off": command_promptoff,
     lightmaps: connectionfinished_handler,
     "listplayerids": printplayers,
     "script_enable": enablescript,
@@ -892,6 +608,7 @@ commands = {
     "community_off": forcecommunitycompat_off
 }
 
+# detect steamids from status output, currently not used for anything
 steamid_pattern = "#\\s+(\\d+)\\s+\"(.*)\"\\s+\\[(.*)\\]\\s+(\\S*)\\s+(\\d+)\\s+(\\d+)\\s+active"
 def status_output_process(a, args):
     # print(a)
@@ -899,12 +616,12 @@ def status_output_process(a, args):
         print("STEAMID IDENTIFIED: " + args.group(3))
     playerids[args.group(2)] = args.group(3)
 status_start_pattern = "players\\s+:\\s+\\d*\\s+humans,\\s+\\d*\\s+bots\\s+\\(\\d*\\s*max\\)"
+# clear list on new connection
 def status_start_process(a,args):
     global playerids
     playerids = {}
 
-# 
-
+# script conflict handler
 fingerprint_set="["+fingerprint_chars+"]"
 fingerprint_pattern=bot_ident+"("+fingerprint_set+fingerprint_set+fingerprint_set+")"
 fingerprint_set_community="\\d\\d\\d"
@@ -916,14 +633,21 @@ def conflict_handler(a, args):
             print("CONFLICT DETECTED!!!")
             if args.group(1).encode() > fingerprint.encode():
                 script_conflict_disabled = True
-                print("#############################")
-                print("SCRIPT DISABLED")
-                print("type \'echo script_enable\' in console to reenable!")
-                print("please wait until next server before reenabling.")
-                print("#############################")
+                if debugmode == True:
+                    print("#############################")
+                    print("SCRIPT DISABLED")
+                    print("type \'echo script_enable\' in console to reenable!")
+                    print("please wait until next server before reenabling.")
+                    print("#############################")
+                else:
+                    console_log("Please wait until next server before reenabling.")
+                    console_log("type \'echo script_enable\' in console to reenable!")
+                    console_log("SCRIPT DISABLED")
             else:
                 if debugmode == True:
-                    print("You won! disabling other script.")
+                    print("Won conflict resolution, disabling other script.")
+                else:
+                    console_log("Won conflict resolution, disabling other script")
 def conflict_handler_community(a, args):
     global script_conflict_disabled
     if community_compat == True:
@@ -931,15 +655,23 @@ def conflict_handler_community(a, args):
             print("CONFLICT DETECTED!!!")
             if args.group(1).encode() > fingerprint_community.encode():
                 script_conflict_disabled = True
-                print("#############################")
-                print("SCRIPT DISABLED")
-                print("type \'echo script_enable\' in console to reenable!")
-                print("please wait until next server before reenabling.")
-                print("#############################")
+                if debugmode == True:
+                    print("#############################")
+                    print("SCRIPT DISABLED")
+                    print("type \'echo script_enable\' in console to reenable!")
+                    print("please wait until next server before reenabling.")
+                    print("#############################")
+                else:
+                    console_log("Please wait until next server before reenabling.")
+                    console_log("type \'echo script_enable\' in console to reenable!")
+                    console_log("SCRIPT DISABLED")
             else:
                 if debugmode == True:
-                    print("You won! disabling other script.")
+                    print("Won conflict resolution, disabling other script.")
+                else:
+                    console_log("Won conflict resolution, disabling other script")
 
+# detect whether server is valve or community thru status
 hostname_pattern = "hostname:\\s*(.*)"
 def hostname_handler(a, args):
     global allowchatprompt
@@ -950,17 +682,14 @@ def hostname_handler(a, args):
         community_compat = False
         if debugmode==True:
             print("### CONNECTED TO VALVE MATCHMAKING SERVER ###")
-        #else:
-            #print("\rConnected to valve server                             \r", end="")
         serverconmessage = "Connected to valve server"
     else:
         community_compat = True
         if debugmode==True:
             print("### CONNECTED TO COMMUNITY SERVER ###")
-        #else:
-            #print("\rConnected to community server                         \r", end="")
         serverconmessage = "Connected to community server"
 
+# detect cs2 server connection, works for official servers. dont know about community servers...
 cs_connect_pattern = "ChangeGameUIState: CSGO_GAME_UI_STATE_LOADINGSCREEN -> CSGO_GAME_UI_STATE_INGAME"
 def cs_connect_handler(a, args):
     global allowchatprompt
@@ -971,6 +700,7 @@ def cs_connect_handler(a, args):
     serverconmessage = "Connected to official CS2 server"
     lasttime = int(time.time()) - interval + 20
 
+# disable messages, assume community server until proven otherwise
 serverconnecting_pattern="Connecting to \\d*"
 def serverconnect_handler(a, args):
     global serverconmessage
@@ -978,18 +708,14 @@ def serverconnect_handler(a, args):
     blockmessages=True
     global community_compat
     community_compat = True 
-    #print("\rConnecting to server...                                        \r", end="")
     serverconmessage = "Connecting to server..."
+# proven otherwise :D
 serverconnecting_matchmaking_pattern="Connecting to matchmaking server \\d*"
-def serverconnect_matchmaking_handler(a, args):
-    # global blockmessages
-    # blockmessages=True
-    # global community_compat
-    # community_compat = False 
+def serverconnect_matchmaking_handler(a, args): 
     global serverconmessage
-    #print("\rConnecting to matchmaking server...                                        \r", end="")
     serverconmessage = "Connecting to matchmaking server..."
 
+# if server allows more than 32 players it's not official, use community compatibility fingerprint
 playercount_pattern="Players:\\s*(\\d*)\\s*/\\s*(\\d*)"
 def playercount_handler(a, args):
     global serverconmessage
@@ -1007,6 +733,7 @@ def playercount_handler(a, args):
     else:
         maxplayers_over_32 = False
 
+# yeah!!
 pattern_commands = {
     steamid_pattern: status_output_process,
     fingerprint_pattern: conflict_handler,
@@ -1018,22 +745,40 @@ pattern_commands = {
     cs_connect_pattern: cs_connect_handler,
     "#CS_CONNECT": cs_connect_handler
 }
-
+# yeah!!!!!
 if debugmode == True:
     for index, command in commands.items():
         print("Registered command string: " + index)
 
+# used for following console.log output
+def follow(filename):
+    with open(filename, 'r', errors="replace") as f:
+        # Move to the end of the file if you only want new data
+        f.seek(0, 2) 
+        while True:
+            try:
+                line = f.readline()
+                if not line:
+                    time.sleep(0.1)  # Sleep briefly to avoid 100% CPU usage
+                    continue
+                yield line
+            except UnicodeDecodeError: # this shouldnt happen with errors=replace but watever lool
+                if debugmode == True:
+                    print("Unicode decode error in console output: you can probably ignore this")
+
+# doesnt do anything l9ol Owned
 havewesentstatusyet = False
 
 spinner_rotato = 0
 spinners=["|","/","—","\\"]
 
+# this ticks every time a line is printed to game console
 for new_line in follow(path_use):
     if spinner_rotato==len(spinners)-1:
         spinner_rotato = -1
     spinner_rotato+=1
     ## send status once on script load to ensure community_compat is set if script is loaded while connected to a community server
-    ## does not work unless command is set after this loop is established
+    ## does not work unless command is sent after this loop is established
     if havewesentstatusyet == False and game_type=="tf":
         command_rcon("status")
         time.sleep(.5)
@@ -1041,24 +786,16 @@ for new_line in follow(path_use):
     if debugmode == True:
         print(new_line.replace("\x07", ""), end='')
     else:
-        #clearlines(CONSOLE_MESSAGE_LIMIT)
-        # sys.stdout.write("\r\x1b[2\x1b[1A\x1b[2K")
-        # sys.stdout.flush()
         if serverconmessage != "":
-            #print("\r"+serverconmessage)
             console_raw(serverconmessage,0)
         else:
-            #print("\rIDLE")
             console_raw("IDLE",0)
         timeuntil = (lasttime+interval)-curtime
         if timeuntil<0 or re.search("Connecting to", serverconmessage):
-            #print("\rWaiting for connection...", end="")
             console_raw("Waiting for connection...", 1)
         else:
-            #if doprompt == True and allowchatprompt == True:
             perc = (interval-timeuntil)/interval
             percstring="\r["
-            # print("\r[", end="")
             for i in range(1,22):
                 if i==11:
                     percstring+=spinners[spinner_rotato]
@@ -1067,11 +804,7 @@ for new_line in follow(path_use):
                 else:
                     percstring+="#"
             percstring+="] Next prompt in " + str(timeuntil) + " seconds"
-            # print(percstring,end="")
             console_raw(percstring,1)
-            #else:
-                #print("[         XX         ] Prompt currently blocked", end="")
-    # global stuffcounter
     for index, command in commands.items():
         if new_line.find(index) != -1:
             command(new_line)
@@ -1097,6 +830,8 @@ for new_line in follow(path_use):
             cat_message(message)
         lasttime = curtime
         interval = random.randint(intervalmin,intervalmax)
+    # this used to do something, now it doesn't
+    # keeping it here because it may come in handy later
     if havewesentstatusyet == False and game_type=="tf":
         #command_rcon("echo CAT_CONFIRM_CONNECTION_PROCESS")
         havewesentstatusyet = True

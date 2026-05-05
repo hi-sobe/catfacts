@@ -1,5 +1,6 @@
 ![GATITO IMAGE](gatito.jpg)
 
+CURRENT VERSION: 1.1.2
 [CHANGELOG](CHANGELOG.md)\
 If you use this software, please report issues, feedback, suggestions to me on [STEAM](https://steamcommunity.com/id/isthatsobe/) or [EMAIL](mailto:sobefromgithub@gmail.com) me at sobefromgithub@gmail.com
 
@@ -57,13 +58,13 @@ Currently supported commands:
 | Command  | Function |
 | :------------- |:-------------|
 | killcat      | Shuts down the script     |
-| caton      | Turns on automatic chat prompt     |
-| catoff      | Turns off automatic chat prompt     |
+| cat_on      | Turns on automatic chat prompt     |
+| cat_off      | Turns off automatic chat prompt     |
 | listplayerids | Prints a list of all connected players + steamids |
 | script_enable | Enables script - script can be automatically disabled if two instances are running on the same server. Use this to turn it back on. |
 | script_disable | Disables the script. |
 | community_on  | Forces community server compatibility mode on, to prevent chat messages from being filtered for invalid characters |
-| community_off | Forces community server compatibility mode off (will be turned back on after every `status` command) |
+| community_off | Forces community server compatibility mode off (will be turned back on after every `status` command if on a community server) |
 
 ## Simple commands
 **Simple commands are defined in the `/custom` folder.**\
@@ -114,6 +115,13 @@ Command scripts have access to the FULL global environment of the main script - 
 | cat_message | say message in chat |
 | cat_command | execute console commands (separate with `;`) |
 
-**WARNING!!**\
+*USEFUL VARIABLES:*
+| Variable | Use |
+| :------------- |:-------------|
+| playerids | Array: list of connected usernames and steamids |
+
+**WARNINGS!!**\
 Command scripts are called with the `exec()` function, which means there is NO sandboxing or security. Code run through this system can break the script, or even break your computer.\
 *ONLY USE THIS TO RUN CODE THAT YOU TRUST!!*
+
+Command scripts have full access to the global namespace, variables defined in command scripts can overwrite variables defined in the main script, potentially breaking it.

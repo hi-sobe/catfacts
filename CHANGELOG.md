@@ -1,3 +1,7 @@
+## 1.1.2
+* Little bit of refactoring
+* All chat functions except timed prompt now handled externally through /custom* modules
+
 ## 1.1.1 beta
 * Added framework for better terminal output
 	* Script now prints last few sent messages to terminal
